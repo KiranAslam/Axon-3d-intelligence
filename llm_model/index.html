@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Large Language Models | AXON 3D Intelligence</title>
+  <meta name="description" content="Explore how a large language model turns text into tokens, uses transformer layers, and predicts one next token at a time.">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="AXON 3D Intelligence">
+  <meta name="theme-color" content="#061411">
+  <link rel="canonical" href="https://axon3dintelligence-nueralnetwork.netlify.app/llm_model/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Large Language Models | AXON 3D Intelligence">
+  <meta property="og:description" content="A visual guide to tokens, embeddings, transformer layers and next-token prediction.">
+  <meta property="og:url" content="https://axon3dintelligence-nueralnetwork.netlify.app/llm_model/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/site.css?v=20260930-theme">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Large Language Models: From Text to the Next Token",
+    "url": "https://axon3dintelligence-nueralnetwork.netlify.app/llm_model/",
+    "description": "An educational guide to the main stages of large-language-model inference."
+  }
+  </script>
+  <style>
+    :root{
+      --border:var(--line);
+      --accent-light:var(--accent-2);
+      --blue-glow:rgba(76,145,255,.05);
+      --copyright:#6F8B81;
+      --meta:#7FA095;
+      --panel-2:#102821;
+    }
+    body{animation:pageIn .5s ease both;}
+    @keyframes pageIn{from{opacity:0;}to{opacity:1;}}
+    body.leaving{opacity:0;transition:opacity .25s ease;}
+    @media(prefers-reduced-motion:reduce){body{animation:none;}body.leaving{transition:none;opacity:1;}}
+    .atmosphere{
+      position:fixed;inset:0;z-index:0;pointer-events:none;
+      background:
+        radial-gradient(560px 420px at 8% 6%,rgba(98,230,179,.07),transparent 65%),
+        radial-gradient(620px 480px at 96% 30%,var(--blue-glow),transparent 70%),
+        radial-gradient(500px 400px at 50% 100%,rgba(98,230,179,.04),transparent 70%);
+    }
+    .floaters{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+    .floaters span{
+      position:absolute;width:6px;height:6px;border-radius:50%;background:var(--accent);
+      opacity:.35;filter:blur(.5px);animation:floatUp 14s linear infinite;
+    }
+    @keyframes floatUp{
+      from{transform:translateY(0) translateX(0);opacity:0;}
+      10%{opacity:.35;}90%{opacity:.2;}
+      to{transform:translateY(-120vh) translateX(20px);opacity:0;}
+    }
+    header.site{
+      position:sticky;top:0;z-index:100;padding-top:env(safe-area-inset-top,0px);
+      background:rgba(6,20,17,.72);backdrop-filter:blur(14px) saturate(1.2);
+      border-bottom:1px solid var(--border);
+    }
+    html[data-theme="light"] header.site{background:rgba(247,250,248,.9);}
+    .nav-row{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:16px 28px;max-width:1180px;margin:0 auto;
+    }
+    .brand{
+      display:flex;align-items:center;gap:10px;font-weight:600;font-size:17px;
+      letter-spacing:.01em;text-decoration:none;white-space:nowrap;
+    }
+    .brand .mark{width:26px;height:26px;display:block;}
+    nav.links{display:flex;gap:8px;font-size:14px;color:var(--muted);}
+    nav.links a{
+      position:relative;padding:8px 14px;border-radius:20px;color:var(--muted);
+      text-decoration:none;transition:color .2s ease,background .2s ease;
+    }
+    nav.links a:hover{color:var(--accent-light);background:rgba(189,245,224,.06);}
+    nav.links a.active{background:var(--accent);color:var(--bg);font-weight:600;}
+    html[data-theme="light"] nav.links a.active{color:#fff;}
+    .nav-cta{display:flex;align-items:center;gap:14px;}
+    .burger{
+      display:none;flex-direction:column;gap:4px;padding:8px;border:0;
+      background:none;cursor:pointer;
+    }
+    .burger span{display:block;width:20px;height:2px;border-radius:2px;background:var(--text);}
+    @media(max-width:880px){
+      nav.links{
+        position:fixed;top:64px;left:0;right:0;z-index:100;
+        display:flex;flex-direction:column;gap:2px;padding:14px 20px;
+        border-bottom:1px solid var(--border);background:var(--bg-soft);
+        opacity:0;pointer-events:none;transform:translateY(-8px);
+        transition:opacity .25s ease,transform .25s ease;
+      }
+      nav.links.open{opacity:1;pointer-events:auto;transform:translateY(0);}
+      nav.links a{padding:12px 8px;border-radius:8px;}
+      .burger{display:flex;}
+    }
+    #scroll-content{position:relative;z-index:1;width:min(var(--max),calc(100% - 36px));margin:auto;}
+    .llm-hero{padding:76px 0 30px;}
+    .llm-hero h1{max-width:900px;}
+    .llm-hero .lead{max-width:820px;}
+    .pipeline{
+      display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:14px;margin:34px 0 22px;
+    }
+    .pipeline-step{
+      position:relative;min-height:176px;padding:22px;
+      border:1px solid var(--line);border-radius:var(--radius);
+      background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.015));
+    }
+    .pipeline-step:not(:last-child)::after{
+      content:"→";position:absolute;top:50%;right:-15px;z-index:2;
+      color:var(--accent);font-size:20px;transform:translate(50%,-50%);
+    }
+    .pipeline-step .tag{margin-bottom:13px;}
+    .pipeline-step h2{font-size:1.18rem;margin:0 0 9px;}
+    .pipeline-step p{margin:0;font-size:.9rem;line-height:1.6;}
+    .stage-number{display:block;margin-bottom:10px;color:var(--meta);font-size:.75rem;font-weight:700;letter-spacing:.12em;}
+    .availability-note{
+      padding:14px 17px;border:1px solid var(--line);border-radius:12px;
+      background:var(--panel);color:var(--muted);font-size:.9rem;line-height:1.6;
+    }
+    .availability-note strong{color:var(--accent);}
+    #unity-build-title{display:none;}
+    #unity-footer{
+      position:absolute!important;inset:auto 0 0!important;z-index:6;
+      display:flex!important;align-items:center;justify-content:flex-start;
+      padding:14px;background:linear-gradient(transparent,rgba(0,0,0,.4));
+      pointer-events:none;
+    }
+    #unity-fullscreen-button{
+      width:36px;height:36px;padding:0;border:1px solid var(--line);
+      border-radius:10px;display:inline-flex;align-items:center;justify-content:center;
+      background:var(--panel)!important;color:var(--accent);box-shadow:var(--shadow);
+      cursor:pointer;pointer-events:auto;
+      transition:background .2s ease,border-color .2s ease,color .2s ease,transform .2s ease;
+    }
+    #unity-fullscreen-button:hover{
+      background:var(--panel-2)!important;border-color:var(--accent);
+      color:var(--accent-2);transform:translateY(-1px);
+    }
+    #unity-fullscreen-button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
+    #unity-fullscreen-button svg{width:16px;height:16px;display:block;}
+    #unity-splash-cover{position:absolute;inset:0;z-index:4;pointer-events:none;background:#07110e;}
+    #unity-loading-bar{color:var(--text);box-shadow:var(--shadow);}
+    #unity-warning{
+      position:absolute!important;left:50%!important;top:16px!important;
+      transform:translateX(-50%);padding:10px 14px;border-radius:8px;
+      color:#fff;z-index:20!important;
+    }
+    #unity-warning[style*="display: block"]{display:block!important;}
+    .feature-card h2{margin-top:0;}
+    .feature-card p:last-child{margin-bottom:0;}
+    .feature-card{scroll-margin-top:96px;}
+    .prose-section{padding-bottom:18px;}
+    .prose-section .section-heading{margin-top:72px;}
+    .prose-section h2{max-width:760px;}
+    .callout p{margin:8px 0 0;}
+    footer.site{position:relative;z-index:1;border-top:1px solid var(--border);padding:56px 0 0;background:var(--bg-soft);margin-top:0;}
+    .footer-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:40px;padding:48px 0 40px;}
+    @media(max-width:900px){.footer-grid{grid-template-columns:1fr 1fr;}}
+    @media(max-width:600px){.footer-grid{grid-template-columns:1fr;}}
+    .footer-brand .brand{margin-bottom:14px;}
+    .footer-brand p{max-width:320px;color:var(--muted);font-size:13.5px;line-height:1.7;}
+    .footer-col h4{margin:0 0 16px;color:var(--meta);font-size:12.5px;font-weight:600;}
+    .footer-col a{display:block;margin-bottom:11px;color:var(--muted);font-size:14px;text-decoration:none;}
+    .footer-col a:hover{color:var(--accent-light);}
+    .footer-bottom{
+      display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+      padding:22px 0;border-top:1px solid var(--border);color:var(--copyright);font-size:12.5px;
+    }
+    .back-to-top{
+      display:inline-flex;width:36px;height:36px;align-items:center;justify-content:center;
+      border:1px solid var(--border);border-radius:8px;background:var(--panel-2);color:var(--muted);
+      text-decoration:none;transition:color .2s ease,border-color .2s ease,transform .2s ease;
+    }
+    .back-to-top:hover{color:var(--accent-light);border-color:var(--accent);transform:translateY(-2px);}
+    @media(max-width:760px){
+      .pipeline{grid-template-columns:1fr 1fr;}
+      .pipeline-step:nth-child(2)::after{display:none;}
+    }
+    @media(max-width:520px){
+      .nav-row{padding:12px 16px;}
+      .brand{font-size:15px;}
+      .llm-hero{padding-top:54px;}
+      .pipeline{grid-template-columns:1fr;}
+      .pipeline-step{min-height:0;}
+      .pipeline-step:not(:last-child)::after{
+        content:"↓";top:auto;right:50%;bottom:-18px;transform:translate(50%,50%);
+      }
+      .footer-grid{grid-template-columns:1fr;}
+      .feature-card{padding:22px;}
+    }
+    @media(prefers-reduced-motion:reduce){.floaters{display:none;}}
+  </style>
+</head>
+<body id="top">
+  <div class="atmosphere" aria-hidden="true"></div>
+  <div class="floaters" id="floaters" aria-hidden="true"></div>
+  <header class="site">
+    <div class="nav-row">
+      <a href="../index.html" class="brand" data-transition>
+        <svg class="mark" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+          <circle cx="6" cy="6" r="2.4" fill="#62E6B3"/>
+          <circle cx="20" cy="6" r="2.4" fill="#62E6B3"/>
+          <circle cx="13" cy="20" r="2.4" fill="#A4F6D4"/>
+          <path d="M6 6L13 20M20 6L13 20M6 6L20 6" stroke="#62E6B3" stroke-width="1" opacity=".6"/>
+        </svg>
+        AXON 3D Intelligence
+      </a>
+      <nav class="links" id="navLinks" aria-label="Main navigation">
+        <a href="../gallery/index.html" data-transition>Gallery</a>
+        <a href="index.html" class="active" aria-current="page">Visualizer</a>
+      </nav>
+      <div class="nav-cta">
+        <button class="burger" id="burger" type="button" aria-label="Toggle menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section id="unity-sticky-wrapper" aria-label="LLM interactive visualizer">
+    <div id="unity-frame">
+      <div id="unity-container" class="unity-desktop">
+        <canvas id="unity-canvas" width="1" height="1" tabindex="-1" aria-label="LLM transformer visualization"></canvas>
+        <div id="unity-splash-cover" aria-hidden="true"></div>
+        <div id="unity-loading-bar" role="status" aria-label="Loading LLM visualizer">
+          <div id="unity-progress-bar-empty"><div id="unity-progress-bar-full"></div></div>
+        </div>
+        <div id="unity-warning" role="alert"></div>
+        <div id="unity-footer">
+          <button id="unity-fullscreen-button" type="button" aria-label="Enter fullscreen" title="Enter fullscreen">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M8 4H4v4m12-4h4v4M20 16v4h-4M4 16v4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div id="unity-build-title">LLM Visualizer</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main id="scroll-content">
+    <section class="llm-hero">
+      <span class="eyebrow">Transformer · Language models</span>
+      <h1>Large Language Models: From Text to the Next Token</h1>
+      <p class="lead">A large language model turns a text sequence into numerical representations, processes its context through transformer layers, then estimates which token could come next. Repeating that step is how it generates text.</p>
+
+      <div class="section-heading">
+        <div><span class="eyebrow">Architecture overview</span><h2>Four stages from prompt to prediction</h2></div>
+        <p>This is a simplified map of an inference pass. Real implementations differ in their layer design and decoding choices.</p>
+      </div>
+      <div class="pipeline" aria-label="LLM inference stages">
+        <article class="pipeline-step">
+          <span class="stage-number">01 · INPUT</span><span class="tag">Text and tokens</span>
+          <h2>Split the prompt</h2>
+          <p>A tokenizer maps pieces of text to vocabulary IDs.</p>
+        </article>
+        <article class="pipeline-step">
+          <span class="stage-number">02 · REPRESENTATION</span><span class="tag">Embeddings</span>
+          <h2>Build vectors</h2>
+          <p>Token IDs become learned vectors, with information about sequence position.</p>
+        </article>
+        <article class="pipeline-step">
+          <span class="stage-number">03 · PROCESSING</span><span class="tag">Transformer</span>
+          <h2>Use context</h2>
+          <p>Attention and feed-forward layers transform the sequence representations.</p>
+        </article>
+        <article class="pipeline-step">
+          <span class="stage-number">04 · OUTPUT</span><span class="tag">Next token</span>
+          <h2>Choose a continuation</h2>
+          <p>Output scores become probabilities used by a decoding method.</p>
+        </article>
+      </div>
+      <p class="availability-note"><strong>About this page:</strong> The interactive Unity visualizer above complements this learning walkthrough.</p>
+    </section>
+
+    <section class="prose-section">
+      <div class="section-heading">
+        <div><span class="eyebrow">01 · Input</span><h2>Tokenization: dividing text into units</h2></div>
+        <p>Before a language model can process a prompt, its text must be represented using the model's vocabulary.</p>
+      </div>
+      <article class="feature-card">
+        <div class="num">1</div>
+        <div>
+          <h2>From words to token IDs</h2>
+          <p>A tokenizer breaks a sentence into tokens and assigns each token a vocabulary index. Depending on the tokenizer, a token may correspond to a complete word, part of a word, punctuation, or another text fragment.</p>
+          <p>Common words may fit in one token, while less familiar words can be represented by several smaller pieces. The ID is just an index—it does not, by itself, encode a human-readable definition.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="prose-section">
+      <div class="section-heading">
+        <div><span class="eyebrow">02 · Representation</span><h2>Embeddings: turning IDs into vectors</h2></div>
+        <p>Neural-network operations work with numbers, so each token ID is mapped to a learned vector.</p>
+      </div>
+      <article class="feature-card">
+        <div class="num">2</div>
+        <div>
+          <h2>Learned token representations</h2>
+          <p>An embedding matrix supplies a vector for each vocabulary entry. The model uses these values as its initial numerical representation of the input tokens.</p>
+          <p>Position information helps distinguish order: the same words arranged differently can communicate different things. Contextual processing in later layers further changes the representations.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="prose-section">
+      <div class="section-heading">
+        <div><span class="eyebrow">03 · Context</span><h2>Self-attention: sharing information across tokens</h2></div>
+        <p>Attention lets a position draw on relevant information from other positions in the sequence.</p>
+      </div>
+      <article class="feature-card">
+        <div class="num">3</div>
+        <div>
+          <h2>Queries, keys, and values</h2>
+          <p>For attention, the model derives query, key, and value vectors from token representations. Similarity between queries and keys produces scores that are normalized into weights.</p>
+          <p>Those weights control how information from the value vectors is combined. Multiple attention heads can learn different patterns of relationships between positions.</p>
+          <div class="callout"><strong>Keep in mind</strong><p>Attention is a mathematical mechanism for mixing contextual information. It should not be mistaken for human understanding.</p></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="prose-section">
+      <div class="section-heading">
+        <div><span class="eyebrow">04 · Transformer block</span><h2>Residual connections and normalization</h2></div>
+        <p>Transformer layers use supporting operations around attention and feed-forward computations.</p>
+      </div>
+      <article class="feature-card">
+        <div class="num">4</div>
+        <div>
+          <h2>Helping information flow through layers</h2>
+          <p>A residual connection adds a block's input to its computed output, giving information a path through the network. Normalization rescales activations to support stable processing.</p>
+          <p>The order and details of these operations depend on the model architecture; there is no single layout shared by every transformer.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="prose-section">
+      <div class="section-heading">
+        <div><span class="eyebrow">05 · Feed-forward computation</span><h2>The MLP transforms each position</h2></div>
+        <p>Attention mixes context between sequence positions; the feed-forward network applies learned transformations at each position.</p>
+      </div>
+      <article class="feature-card">
+        <div class="num">5</div>
+        <div>
+          <h2>Learned transformations inside each layer</h2>
+          <p>The multilayer perceptron (MLP), also called a feed-forward network, applies learned weights and nonlinear functions to token representations.</p>
+          <p>Attention and MLP computations are arranged in transformer blocks and repeated across the model's layers, progressively processing the sequence.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="prose-section">
+      <div class="section-heading">
+        <div><span class="eyebrow">06 · Vocabulary scores</span><h2>Final normalization and unembedding</h2></div>
+        <p>After the transformer layers, the model turns its final representation into a score for each vocabulary token.</p>
+      </div>
+      <article class="feature-card">
+        <div class="num">6</div>
+        <div>
+          <h2>From hidden representation to logits</h2>
+          <p>A final normalization is commonly applied before an output projection, sometimes called the unembedding matrix. This projection produces one logit per candidate vocabulary token.</p>
+          <p>Logits are raw scores, not probabilities. A larger score alone is not a guarantee that the corresponding token will be selected.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="prose-section">
+      <div class="section-heading">
+        <div><span class="eyebrow">07 · Generation</span><h2>Softmax and next-token selection</h2></div>
+        <p>The model converts its scores into a distribution, then a decoding rule picks what to append next.</p>
+      </div>
+      <article class="feature-card">
+        <div class="num">7</div>
+        <div>
+          <h2>Predict, append, and repeat</h2>
+          <p>Softmax maps the vocabulary logits to a probability distribution. A decoding strategy then selects a token—for example, by choosing the highest-probability option or sampling among alternatives.</p>
+          <p>The chosen token is appended to the sequence, and the model runs another prediction using the expanded context. This repeated next-token process is known as <strong>autoregressive generation</strong>.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="prose-section">
+      <div class="section-heading">
+        <div><span class="eyebrow">Explore the process</span><h2>What to follow in the walkthrough</h2></div>
+        <p>These steps connect the main pieces of the inference pipeline.</p>
+      </div>
+      <ul>
+        <li>Trace a token from its vocabulary ID to its embedding vector.</li>
+        <li>Follow how attention combines information from different sequence positions.</li>
+        <li>Compare context-mixing in attention with per-position processing in the MLP.</li>
+        <li>See how vocabulary logits become probabilities for the next token.</li>
+        <li>Notice how each generated token becomes part of the context for the next prediction.</li>
+      </ul>
+    </section>
+
+    <section class="prose-section">
+      <div class="section-heading">
+        <div><span class="eyebrow">Important context</span><h2>A simplified view of inference</h2></div>
+      </div>
+      <div class="callout">
+        <p>This page describes a simplified information flow during LLM inference. Real systems vary in their number of layers, dimensions, architectural details, and decoding settings. The walkthrough is intended to explain the broad stages—not to show a specific production model, its training process, or every computation it performs.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="../index.html" class="brand" data-transition>
+            <svg class="mark" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+              <circle cx="6" cy="6" r="2.4" fill="#62E6B3"/><circle cx="20" cy="6" r="2.4" fill="#62E6B3"/>
+              <circle cx="13" cy="20" r="2.4" fill="#A4F6D4"/><path d="M6 6L13 20M20 6L13 20M6 6L20 6" stroke="#62E6B3" stroke-width="1" opacity=".6"/>
+            </svg>
+            AXON 3D Intelligence
+          </a>
+          <p>An interactive gallery of AI concepts, rebuilt as 3D models you can explore in the browser.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <a href="../gallery/index.html" data-transition>Gallery</a>
+          <a href="index.html">LLM Visualizer</a>
+        </div>
+        <div class="footer-col">
+          <h4>Project</h4>
+          <a href="../pages/about.html">About the project</a>
+          <a href="../pages/contact.html">Contact page</a>
+          <a href="mailto:axon.3d.intelligence.1@gmail.com">axon.3d.intelligence.1@gmail.com</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="../pages/privacy.html">Privacy Policy</a>
+          <a href="../pages/terms.html">Terms of Use</a>
+          <a href="../pages/disclaimer.html">Disclaimer</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 AXON 3D Intelligence. All rights reserved.</span>
+        <span style="display:flex;align-items:center;gap:14px;">Built with Unity WebGL &amp; AI.
+          <a class="back-to-top" href="#top" aria-label="Back to top">↑</a>
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/site.js?v=20260930-theme" defer></script>
+  <script>
+    (function () {
+      var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var floaters = document.getElementById('floaters');
+      if (!reduceMotion && floaters) {
+        for (var i = 0; i < 14; i++) {
+          var floater = document.createElement('span');
+          floater.style.left = (Math.random() * 100) + '%';
+          floater.style.bottom = '-10px';
+          floater.style.animationDuration = (10 + Math.random() * 10) + 's';
+          floater.style.animationDelay = (Math.random() * 14) + 's';
+          floaters.appendChild(floater);
+        }
+      }
+
+      var burger = document.getElementById('burger');
+      var navLinks = document.getElementById('navLinks');
+      burger.addEventListener('click', function () {
+        var open = navLinks.classList.toggle('open');
+        burger.setAttribute('aria-expanded', String(open));
+      });
+      navLinks.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', function () {
+          navLinks.classList.remove('open');
+          burger.setAttribute('aria-expanded', 'false');
+        });
+      });
+      document.querySelectorAll('a[data-transition]').forEach(function (link) {
+        link.addEventListener('click', function (event) {
+          var href = link.getAttribute('href');
+          if (!href || link.target === '_blank' || reduceMotion) return;
+          event.preventDefault();
+          document.body.classList.add('leaving');
+          window.setTimeout(function () { window.location.href = href; }, 220);
+        });
+      });
+    })();
+  </script>
+  <script>
+    (function () {
+      var buildUrl = 'Build';
+      var canvas = document.getElementById('unity-canvas');
+      var loadingBar = document.getElementById('unity-loading-bar');
+      var progressBar = document.getElementById('unity-progress-bar-full');
+      var splashCover = document.getElementById('unity-splash-cover');
+      var warning = document.getElementById('unity-warning');
+      var container = document.getElementById('unity-container');
+
+      function showUnityMessage(message, type) {
+        warning.textContent = message;
+        warning.style.background = type === 'error' ? '#8b2020' : '#7b6614';
+        warning.style.display = 'block';
+        window.setTimeout(function () { warning.style.display = 'none'; }, 7000);
+      }
+
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + '/llm_model.data.br',
+        frameworkUrl: buildUrl + '/llm_model.framework.js.br',
+        codeUrl: buildUrl + '/llm_model.wasm.br',
+        streamingAssetsUrl: 'StreamingAssets',
+        companyName: 'AXON 3D Intelligence',
+        productName: 'LLM Visualizer',
+        productVersion: '1.0.0',
+        showBanner: showUnityMessage,
+        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2)
+      };
+
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        container.className = 'unity-mobile';
+        canvas.className = 'unity-mobile';
+      }
+
+      loadingBar.style.display = 'block';
+      var loader = document.createElement('script');
+      loader.src = buildUrl + '/llm_model.loader.js';
+      loader.onload = function () {
+        createUnityInstance(canvas, config, function (progress) {
+          progressBar.style.width = (100 * progress) + '%';
+        }).then(function (unityInstance) {
+          loadingBar.style.display = 'none';
+          splashCover.style.display = 'none';
+          document.getElementById('unity-fullscreen-button').onclick = function () {
+            unityInstance.SetFullscreen(1);
+          };
+        }).catch(function (message) {
+          showUnityMessage(message, 'error');
+          loadingBar.style.display = 'none';
+        });
+      };
+      loader.onerror = function () {
+        showUnityMessage('The Unity build could not be loaded. Check that the Build folder is deployed with this page.', 'error');
+        loadingBar.style.display = 'none';
+      };
+      document.body.appendChild(loader);
+    })();
+  </script>
+</body>
+</html>
