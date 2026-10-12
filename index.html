@@ -432,27 +432,6 @@
   .t-item h4{font-size:17px; margin:0 0 6px; font-weight:600;}
   .t-item p{color:var(--muted); font-size:14px; line-height:1.6; margin:0;}
 
-  /* ---------- highlights ---------- */
-  .highlights-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
-  @media (max-width:860px){.highlights-grid{grid-template-columns:1fr;}}
-  .highlight-card{
-    background:var(--panel); border:1px solid var(--border); border-radius:14px;
-    padding:26px; transition:transform .3s var(--ease), border-color .3s ease;
-  }
-  .highlight-card:hover{transform:translateY(-4px); border-color:var(--border-strong);}
-  .highlight-card .quote-mark{color:var(--accent); font-size:28px; font-family:Georgia,serif; line-height:1; margin-bottom:10px; display:block;}
-  .highlight-card p.quote{color:var(--text); font-size:14.5px; line-height:1.65; margin:0 0 18px;}
-  .highlight-person{display:flex; align-items:center; gap:12px;}
-  .avatar{
-    width:38px; height:38px; border-radius:50%;
-    background:linear-gradient(135deg,var(--accent),var(--panel-2));
-    display:flex; align-items:center; justify-content:center;
-    font-family:'Space Grotesk',sans-serif; font-weight:700; color:#04140f; font-size:14px;
-  }
-  .highlight-person div b{display:block; font-size:13.5px;}
-  .highlight-person div span{font-size:12px; color:var(--meta);}
-  .sample-tag{font-size:10.5px; color:var(--meta); border:1px solid var(--border); padding:2px 8px; border-radius:12px; margin-top:14px; display:inline-block;}
-
   /* ---------- documentation ---------- */
   .doc-panel{
     background:linear-gradient(135deg, var(--panel), var(--panel-2));
@@ -662,46 +641,6 @@
           <div class="t-date">Phase 5 — Planned</div>
           <h4>Deep learning &amp; LLMs</h4>
           <p>CNN and a transformer/LLM explainer round out the series with more advanced 3D scenes.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== HIGHLIGHTS ===== -->
-  <section id="highlights" class="divider">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <div class="eyebrow">Project highlights</div>
-        <h2>What early reviewers noticed</h2>
-        <p>Sample feedback from early demo sessions — illustrative, not linked to real names.</p>
-      </div>
-      <div class="highlights-grid reveal-stagger">
-        <div class="highlight-card">
-          <span class="quote-mark">“</span>
-          <p class="quote">Rotating the network mid-prediction made forward propagation click in a way slides never did.</p>
-          <div class="highlight-person">
-            <div class="avatar">FS</div>
-            <div><b>Faculty Supervisor</b><span>Demo session</span></div>
-          </div>
-          <span class="sample-tag">Sample feedback</span>
-        </div>
-        <div class="highlight-card">
-          <span class="quote-mark">“</span>
-          <p class="quote">Being able to draw a digit and watch it move through the layers is a much better first lesson than the math.</p>
-          <div class="highlight-person">
-            <div class="avatar">PR</div>
-            <div><b>Peer Reviewer</b><span>Class walkthrough</span></div>
-          </div>
-          <span class="sample-tag">Sample feedback</span>
-        </div>
-        <div class="highlight-card">
-          <span class="quote-mark">“</span>
-          <p class="quote">Running entirely in the browser, with no installs, made it easy to share and easy to try.</p>
-          <div class="highlight-person">
-            <div class="avatar">WA</div>
-            <div><b>Workshop Attendee</b><span>Open demo</span></div>
-          </div>
-          <span class="sample-tag">Sample feedback</span>
         </div>
       </div>
     </div>
