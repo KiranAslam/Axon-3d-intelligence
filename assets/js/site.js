@@ -36,6 +36,27 @@ window.addEventListener("storage", (event) => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
+  const unityWrapper = document.getElementById("unity-sticky-wrapper");
+  if (unityWrapper) {
+    const updateUnityFullscreen = () => {
+      const fullscreenElement = document.fullscreenElement
+        || document.webkitFullscreenElement
+        || document.webkitCurrentFullScreenElement;
+      const isFullscreen = Boolean(fullscreenElement && unityWrapper.contains(fullscreenElement));
+      unityWrapper.classList.toggle("unity-fullscreen", isFullscreen);
+      document.documentElement.classList.toggle("unity-fullscreen", isFullscreen);
+      const fullscreenButton = document.getElementById("unity-fullscreen-button");
+      if (fullscreenButton) {
+        const label = isFullscreen ? "Exit fullscreen" : "Enter fullscreen";
+        fullscreenButton.setAttribute("aria-label", label);
+        fullscreenButton.title = label;
+      }
+    };
+
+    document.addEventListener("fullscreenchange", updateUnityFullscreen);
+    document.addEventListener("webkitfullscreenchange", updateUnityFullscreen);
+  }
+
   if (document.body.classList.contains("homepage") || document.body.classList.contains("gallery-page")) {
     const actions = document.querySelector(".nav-cta");
     if (actions) {

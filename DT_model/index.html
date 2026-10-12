@@ -408,7 +408,7 @@
         cacheControl: function (url) {
           return /\.unityweb(?:$|\?)/.test(url) ? 'must-revalidate' : 'no-store';
         },
-        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2)
+        devicePixelRatio: Math.min(window.devicePixelRatio || 1, window.matchMedia('(pointer: coarse)').matches ? 2.5 : 2)
       };
 
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
@@ -425,7 +425,15 @@
         }).then(function (unityInstance) {
           loadingBar.style.display = 'none';
           document.getElementById('unity-fullscreen-button').onclick = function () {
-            unityInstance.SetFullscreen(1);
+            var fullscreenTarget = document.getElementById('unity-sticky-wrapper');
+            var currentFullscreenElement = document.fullscreenElement || document.webkitFullscreenElement;
+            if (currentFullscreenElement === fullscreenTarget) {
+              if (document.exitFullscreen) document.exitFullscreen();
+              else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+              else unityInstance.SetFullscreen(1);
+            } else if (fullscreenTarget.requestFullscreen) fullscreenTarget.requestFullscreen();
+            else if (fullscreenTarget.webkitRequestFullscreen) fullscreenTarget.webkitRequestFullscreen();
+            else unityInstance.SetFullscreen(1);
           };
         }).catch(function (message) {
           showUnityMessage(message, 'error');

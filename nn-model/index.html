@@ -354,7 +354,7 @@
     productVersion: '1.0.0',
     showBanner: unityShowBanner,
     cacheControl: (url) => /\.unityweb(?:$|\?)/.test(url) ? 'must-revalidate' : 'no-store',
-    devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2)
+    devicePixelRatio: Math.min(window.devicePixelRatio || 1, window.matchMedia('(pointer: coarse)').matches ? 2.5 : 2)
   };
   function unityShowBanner(msg, type) {
     const warningBanner = document.querySelector('#unity-warning');
@@ -377,7 +377,17 @@
       document.querySelector('#unity-loading-bar').style.display = 'none';
       document.querySelector('#unity-splash-cover').style.display = 'none';
       const fullscreenButton = document.querySelector('#unity-fullscreen-button');
-      if (fullscreenButton) fullscreenButton.onclick = () => unityInstance.SetFullscreen(1);
+      if (fullscreenButton) fullscreenButton.onclick = () => {
+        const fullscreenTarget = document.getElementById('unity-sticky-wrapper');
+        const currentFullscreenElement = document.fullscreenElement || document.webkitFullscreenElement;
+        if (currentFullscreenElement === fullscreenTarget) {
+          if (document.exitFullscreen) document.exitFullscreen();
+          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+          else unityInstance.SetFullscreen(1);
+        } else if (fullscreenTarget.requestFullscreen) fullscreenTarget.requestFullscreen();
+        else if (fullscreenTarget.webkitRequestFullscreen) fullscreenTarget.webkitRequestFullscreen();
+        else unityInstance.SetFullscreen(1);
+      };
     }).catch((message) => unityShowBanner(message, 'error'));
   };
   script.onerror = () => unityShowBanner('The Unity build could not be loaded. Please make sure the Build folder is deployed with this site.', 'error');
