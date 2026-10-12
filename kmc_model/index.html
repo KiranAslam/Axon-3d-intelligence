@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>K-Means Clustering Visualizer | AXON 3D Intelligence</title>
+<meta name="description" content="Explore K-Means clustering in an interactive 3D visualizer. Watch data points group around moving centroids as the algorithm iterates.">
+<meta name="robots" content="index, follow">
+<meta name="author" content="AXON 3D Intelligence">
+<meta name="theme-color" content="#061411">
+<link rel="canonical" href="https://axon3dintelligence-nueralnetwork.netlify.app/kmc_model/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="K-Means Clustering Visualizer | AXON 3D Intelligence">
+<meta property="og:description" content="Explore how K-Means groups points and updates cluster centroids in an interactive 3D scene.">
+<meta property="og:url" content="https://axon3dintelligence-nueralnetwork.netlify.app/kmc_model/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="TemplateData/style.css">
+<link rel="stylesheet" href="../assets/css/site.css?v=20260930-theme">
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"WebSite",
+  "name":"AXON 3D Intelligence",
+  "url":"https://axon3dintelligence-nueralnetwork.netlify.app/kmc_model/",
+  "description":"Interactive 3D visualization of the K-Means clustering algorithm."
+}
+</script>
+<style>
+  :root{
+    --border:var(--line);
+    --accent-light:var(--accent-2);
+    --blue-glow:rgba(76,145,255,0.05);
+    --copyright:#6F8B81;
+    --meta:#7FA095;
+    --panel-2:#102821;
+  }
+  body{animation:pageIn .5s ease both;}
+  @keyframes pageIn{from{opacity:0;} to{opacity:1;}}
+  body.leaving{opacity:0; transition:opacity .25s ease;}
+  @media (prefers-reduced-motion:reduce){body{animation:none;} body.leaving{transition:none; opacity:1;}}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 28px; position:relative; z-index:1;}
+  .atmosphere{position:fixed; inset:0; z-index:0; pointer-events:none; background:radial-gradient(560px 420px at 8% 6%,rgba(98,230,179,.07),transparent 65%),radial-gradient(620px 480px at 96% 30%,var(--blue-glow),transparent 70%),radial-gradient(500px 400px at 50% 100%,rgba(98,230,179,.04),transparent 70%);}
+  .floaters{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;}
+  .floaters span{position:absolute; width:6px; height:6px; border-radius:50%; background:var(--accent); opacity:.35; filter:blur(.5px); animation:floatUp 14s linear infinite;}
+  @keyframes floatUp{from{transform:translateY(0);opacity:0;}10%{opacity:.35;}90%{opacity:.2;}to{transform:translateY(-120vh) translateX(20px);opacity:0;}}
+  header.site{position:sticky;top:0;z-index:1000;padding-top:env(safe-area-inset-top,0px);background:rgba(6,20,17,.72);backdrop-filter:blur(14px) saturate(1.2);border-bottom:1px solid var(--border);}
+  .nav-row{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;max-width:1180px;margin:0 auto;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:17px;letter-spacing:.01em;text-decoration:none;}
+  .brand .mark{width:26px;height:26px;display:block;}
+  nav.links{display:flex;gap:8px;font-size:14px;color:var(--muted);}
+  nav.links a{text-decoration:none;color:var(--muted);padding:8px 14px;border-radius:20px;transition:color .2s ease,background .2s ease;position:relative;}
+  nav.links a:hover{color:var(--accent-light);background:rgba(189,245,224,.06);}
+  nav.links a.active{color:var(--bg);background:var(--accent);font-weight:600;}
+  .nav-cta{display:flex;align-items:center;gap:14px;}
+  .burger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:8px;}
+  .burger span{width:20px;height:2px;background:var(--text);display:block;border-radius:2px;}
+  @media(max-width:880px){nav.links{position:fixed;top:64px;left:0;right:0;z-index:1001;background:var(--bg-soft);border-bottom:1px solid var(--border);flex-direction:column;padding:14px 20px;gap:2px;transform:translateY(-8px);opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;}nav.links.open{transform:translateY(0);opacity:1;pointer-events:auto;}nav.links a{padding:12px 8px;border-radius:8px;}.burger{display:flex;}}
+  footer.site{border-top:1px solid var(--border);padding:56px 0 0;background:var(--bg-soft);margin-top:0;}
+  .footer-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:40px;padding:48px 0 40px;}
+  @media(max-width:900px){.footer-grid{grid-template-columns:1fr 1fr;}}
+  @media(max-width:600px){.footer-grid{grid-template-columns:1fr;}}
+  .footer-brand .brand{margin-bottom:14px;}
+  .footer-brand p{color:var(--muted);font-size:13.5px;line-height:1.7;max-width:320px;}
+  .footer-col h4{font-size:12.5px;color:var(--meta);margin:0 0 16px;font-weight:600;}
+  .footer-col a{display:block;color:var(--muted);text-decoration:none;font-size:14px;margin-bottom:11px;transition:color .2s ease;}
+  .footer-col a:hover{color:var(--accent-light);}
+  .footer-bottom{border-top:1px solid var(--border);padding:22px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;color:var(--copyright);font-size:12.5px;}
+  .back-to-top{background:var(--panel-2);border:1px solid var(--border);color:var(--muted);width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;transition:color .2s ease,border-color .2s ease,transform .2s ease;}
+  .back-to-top:hover{color:var(--accent-light);border-color:var(--accent);transform:translateY(-2px);}
+  #unity-footer{
+    position:absolute!important;inset:auto 0 0!important;z-index:6;
+    display:flex!important;align-items:center;justify-content:flex-start;
+    padding:14px;background:linear-gradient(transparent,rgba(0,0,0,.4));
+    pointer-events:none;
+  }
+  #unity-build-title{display:none;}
+  #unity-fullscreen-button{
+    width:36px;height:36px;padding:0;border:1px solid var(--line);
+    border-radius:10px;display:inline-flex;align-items:center;justify-content:center;
+    background:var(--panel)!important;color:var(--accent);
+    box-shadow:var(--shadow);cursor:pointer;pointer-events:auto;
+    transition:background .2s ease,border-color .2s ease,color .2s ease,transform .2s ease;
+  }
+  #unity-fullscreen-button:hover{
+    background:var(--panel-2)!important;border-color:var(--accent);color:var(--accent-2);
+    transform:translateY(-1px);
+  }
+  #unity-fullscreen-button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
+  #unity-fullscreen-button svg{width:16px;height:16px;display:block;}
+  #unity-splash-cover{position:absolute;inset:0;z-index:4;pointer-events:none;background:var(--bg);}
+  #unity-loading-bar{background:var(--panel);color:var(--text);box-shadow:var(--shadow);}
+  #unity-progress-bar-empty{background:var(--panel-2)!important;}
+</style>
+</head>
+<body id="top">
+<div class="atmosphere"></div>
+<div class="floaters" id="floaters"></div>
+<header class="site">
+  <div class="nav-row">
+    <a href="../index.html" class="brand" data-transition>
+      <svg class="mark" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+        <circle cx="6" cy="6" r="2.4" fill="#62E6B3"/><circle cx="20" cy="6" r="2.4" fill="#62E6B3"/>
+        <circle cx="13" cy="20" r="2.4" fill="#A4F6D4"/><path d="M6 6L13 20M20 6L13 20M6 6L20 6" stroke="#62E6B3" stroke-width="1" opacity=".6"/>
+      </svg>
+      AXON 3D Intelligence
+    </a>
+    <nav class="links" id="navLinks">
+      <a href="../gallery/index.html" data-transition>Gallery</a>
+      <a href="index.html" class="active" aria-current="page">Visualizer</a>
+    </nav>
+    <div class="nav-cta"><button class="burger" id="burger" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button></div>
+  </div>
+</header>
+
+<main id="scroll-content">
+  <section id="unity-sticky-wrapper" aria-label="Interactive K-Means clustering visualizer">
+    <div id="unity-frame">
+      <div id="unity-container" class="unity-desktop">
+        <canvas id="unity-canvas" width="1" height="1" tabindex="-1" aria-label="AXON interactive K-Means clustering model"></canvas>
+        <div id="unity-splash-cover" aria-hidden="true"></div>
+        <div id="unity-loading-bar"><div id="unity-progress-bar-empty"><div id="unity-progress-bar-full"></div></div></div>
+        <div id="unity-warning" role="status" aria-live="polite"></div>
+        <div id="unity-footer">
+          <button id="unity-fullscreen-button" type="button" aria-label="Enter fullscreen" title="Enter fullscreen">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M8 4H4v4m12-4h4v4M20 16v4h-4M4 16v4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div id="unity-build-title">K-Means Interactive Visualizer</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how-it-works" class="reveal">
+    <div class="section-heading"><div><span class="eyebrow">01 · Architecture</span><h2>From numeric features to cluster assignments</h2></div><p>K-Means groups numeric points by assigning each one to its nearest centroid. Most datasets use two features; image color quantization uses red, green and blue values.</p></div>
+    <div class="arch-overview">
+      <article class="arch-item reveal"><span class="tag">Input</span><h3>Features or RGB</h3><p>Most datasets use two numeric features shown across the X and Z axes. Sampled image pixels use three values: red, green and blue.</p></article>
+      <article class="arch-item reveal"><span class="tag">Centroids</span><h3>User-selected K</h3><p>Each centroid represents one cluster. Choose K to set how many groups the algorithm will form.</p></article>
+      <article class="arch-item reveal"><span class="tag">Output</span><h3>Cluster assignments</h3><p>Every point receives a cluster ID and the scene colors it by group. IDs are not known categories or predictions.</p></article>
+    </div>
+  </section>
+  <article class="feature-card reveal"><div class="num">1</div><div><h2>The input data</h2><p>K-Means operates on numeric coordinates, not names or descriptions. The customer segmentation dataset uses income and spending behavior; the Iris dataset uses petal measurements.</p><p>Most datasets use two dimensions underneath and are arranged in the 3D scene for viewing. Image color quantization instead represents each sampled pixel with its <strong>R, G and B</strong> values.</p></div></article>
+  <article class="feature-card reveal"><div class="num">2</div><div><h2>Distance and assignment</h2><p>For each point, the algorithm measures its distance to every centroid and assigns it to the nearest one. The visualizer offers <strong>Euclidean</strong>, <strong>Manhattan</strong> and <strong>Cosine</strong> distance; each can produce different groupings.</p><div class="formula-box">Euclidean distance: d(x, c) = sqrt(sum((x[j] - c[j])^2))</div><p>Euclidean distance measures straight-line separation. Manhattan and Cosine compare points in different ways.</p></div></article>
+  <article class="feature-card reveal"><div class="num">3</div><div><h2>Centroid updates and convergence</h2><p>After assignment, each centroid is recalculated using a rule that matches the selected distance: the <strong>mean</strong> for Euclidean, the coordinate-wise <strong>median</strong> for Manhattan, and a <strong>normalized mean direction</strong> for Cosine.</p><p>Assignment and update steps repeat until total centroid movement falls below <strong>0.001</strong> or the default limit of <strong>100 iterations</strong> is reached.</p><p><strong>Initialization detail:</strong> K-Means++ is available with Euclidean distance. With Manhattan or Cosine, this implementation uses random initialization.</p></div></article>
+
+  <section class="prose-section reveal">
+    <div class="section-heading"><div><span class="eyebrow">02 · Clustering</span><h2>How the groups are formed</h2></div><p>K-Means learns without labeled examples. It improves an initial grouping through repeated assignment and centroid updates.</p></div>
+    <ul><li><strong>Choose a dataset and K</strong> to define the numeric points and number of groups.</li><li><strong>Initialize centroids</strong> randomly or with K-Means++ when using Euclidean distance.</li><li><strong>Assign each point</strong> to its nearest centroid with the selected distance metric.</li><li><strong>Update each centroid</strong> using the metric's mean, median or normalized-mean rule.</li><li><strong>Repeat</strong> until movement is below 0.001 or 100 iterations have run.</li></ul>
+    <div class="stat-pills"><div class="stat-pill"><strong>3</strong> distance metrics</div><div class="stat-pill"><strong>7</strong> datasets</div><div class="stat-pill"><strong>100</strong> default iteration limit</div><div class="stat-pill"><strong>0.001</strong> movement threshold</div></div>
+    <div class="callout"><strong>Labels and silhouette score</strong><p>Ground-truth colors are available for labeled synthetic datasets and Iris. Customer segmentation has no reference cluster labels, so its results are exploratory. The silhouette score describes cluster separation; it is not classification accuracy or proof that clusters have real-world meaning.</p></div>
+  </section>
+  <section class="prose-section reveal">
+    <div class="section-heading"><div><span class="eyebrow">03 · Interaction</span><h2>Learn by exploring</h2></div><p>Compare how datasets and settings change the cluster assignments and centroid paths.</p></div>
+    <ul><li><strong>Choose from seven datasets</strong>, including synthetic patterns, customer segmentation, Iris measurements and image colors.</li><li><strong>Change K</strong> to see how the requested number of clusters changes the grouping.</li><li><strong>Compare initialization and distance options</strong> to explore different starting points and notions of similarity.</li><li><strong>Start, pause, resume or restart</strong> the clustering animation.</li><li><strong>Select a point</strong> to inspect its distance from each centroid.</li><li><strong>Follow centroid markers and trails</strong> as centers move between iterations.</li><li><strong>Compare colors</strong> with reference labels when available, or with original pixel colors for image quantization.</li></ul>
+    <div class="callout"><strong>Ground truth depends on the dataset</strong><p>Labeled synthetic datasets and Iris provide reference labels for comparison. Image color quantization can show original pixel colors. Customer segmentation has no ground-truth clusters.</p></div>
+  </section>
+  <section class="prose-section reveal">
+    <div class="section-heading"><div><span class="eyebrow">04 · Technology</span><h2>How this model is built</h2></div><p>The Unity scene runs clustering over numeric coordinates and animates assignments and centroid movement.</p></div>
+    <p>The visualizer is implemented in <strong>Unity and C#</strong>. It supports Euclidean, Manhattan and Cosine distance, with a centroid update rule matched to each metric.</p>
+    <p>Results depend on the dataset, K, initialization and distance metric. Different settings can produce different groupings, and cluster IDs do not represent predefined classes.</p>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand"><a href="../index.html" class="brand" data-transition>
+        <svg class="mark" viewBox="0 0 26 26" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="2.4" fill="#62E6B3"/><circle cx="20" cy="6" r="2.4" fill="#62E6B3"/><circle cx="13" cy="20" r="2.4" fill="#A4F6D4"/><path d="M6 6L13 20M20 6L13 20M6 6L20 6" stroke="#62E6B3" stroke-width="1" opacity=".6"/></svg>
+        AXON 3D Intelligence</a><p>An interactive gallery of AI concepts, rebuilt as 3D models you can explore in the browser.</p></div>
+      <div class="footer-col"><h4>Explore</h4><a href="../gallery/index.html" data-transition>Gallery</a><a href="index.html">Visualizer</a></div>
+      <div class="footer-col"><h4>Project</h4><a href="../pages/about.html" data-transition>About the project</a><a href="../pages/contact.html" data-transition>Contact page</a><a href="mailto:axon.3d.intelligence.1@gmail.com">axon.3d.intelligence.1@gmail.com</a></div>
+      <div class="footer-col"><h4>Legal</h4><a href="../pages/privacy.html" data-transition>Privacy Policy</a><a href="../pages/terms.html" data-transition>Terms of Use</a><a href="../pages/disclaimer.html" data-transition>Disclaimer</a></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 AXON 3D Intelligence. All rights reserved.</span><span style="display:flex;align-items:center;gap:14px;">Built with Unity WebGL &amp; C#.<a class="back-to-top" href="#top" aria-label="Back to top">↑</a></span></div>
+  </div>
+</footer>
+
+<script src="../assets/js/site.js?v=20260930-theme" defer></script>
+<script>
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!reduce){var fc=document.getElementById('floaters');for(var i=0;i<14;i++){var floater=document.createElement('span');floater.style.left=(Math.random()*100)+'%';floater.style.bottom='-10px';floater.style.animationDuration=(10+Math.random()*10)+'s';floater.style.animationDelay=(Math.random()*14)+'s';fc.appendChild(floater);}}
+  var burger=document.getElementById('burger');
+  var navLinks=document.getElementById('navLinks');
+  burger.addEventListener('click',function(){var open=navLinks.classList.toggle('open');burger.setAttribute('aria-expanded',open);});
+  navLinks.querySelectorAll('a').forEach(function(link){link.addEventListener('click',function(){navLinks.classList.remove('open');burger.setAttribute('aria-expanded','false');});});
+  document.querySelectorAll('a[data-transition]').forEach(function(link){link.addEventListener('click',function(event){if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;var href=link.getAttribute('href');if(!href||link.target==='_blank')return;event.preventDefault();document.body.classList.add('leaving');setTimeout(function(){window.location.href=href;},220);});});
+  var canvas=document.querySelector('#unity-canvas');
+  var buildUrl='Build';
+  var loaderUrl=buildUrl+'/38a51bcfa7676394481e8ea7e1ba10ad.loader.js';
+  var config={arguments:[],dataUrl:buildUrl+'/e8be5611ad240eb9b7c2b4f8668afbd4.data.unityweb',frameworkUrl:buildUrl+'/8cc782c0117e2d453444592791443a37.framework.js.unityweb',codeUrl:buildUrl+'/8b64b431d828efd422462d903c2db159.wasm.unityweb',streamingAssetsUrl:'StreamingAssets',companyName:'K-Means Interactive Visualizer',productName:'K-Means Interactive Visualizer',productVersion:'0.1.0',showBanner:unityShowBanner,devicePixelRatio:Math.min(window.devicePixelRatio||1,2)};
+  function unityShowBanner(message,type){var warning=document.querySelector('#unity-warning');warning.textContent=message;warning.style.display='block';warning.style.background=type==='error'?'#8b2020':'#7b6614';setTimeout(function(){warning.style.display='none';},5000);}
+  if(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)){document.querySelector('#unity-container').className='unity-mobile';canvas.className='unity-mobile';}
+  document.querySelector('#unity-loading-bar').style.display='block';
+  var script=document.createElement('script');
+  script.src=loaderUrl;
+  script.onload=function(){createUnityInstance(canvas,config,function(progress){document.querySelector('#unity-progress-bar-full').style.width=(100*progress)+'%';}).then(function(unityInstance){document.querySelector('#unity-loading-bar').style.display='none';document.querySelector('#unity-splash-cover').style.display='none';var fullscreenButton=document.querySelector('#unity-fullscreen-button');if(fullscreenButton)fullscreenButton.onclick=function(){unityInstance.SetFullscreen(1);};}).catch(function(message){unityShowBanner(message,'error');});};
+  script.onerror=function(){unityShowBanner('The Unity build could not be loaded. Please make sure the Build folder is deployed with this site.','error');};
+  document.body.appendChild(script);
+</script>
+</body>
+</html>
