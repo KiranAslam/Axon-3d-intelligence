@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Model Gallery | AXON 3D Intelligence</title>
+  <meta name="description" content="Explore every AXON 3D AI model, open live visualizers, and learn about models in development.">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#061411">
+  <link rel="canonical" href="https://axon3dintelligence-nueralnetwork.netlify.app/gallery/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Model Gallery | AXON 3D Intelligence">
+  <meta property="og:description" content="Browse interactive AI model visualizers and upcoming models from AXON 3D Intelligence.">
+  <meta property="og:url" content="https://axon3dintelligence-nueralnetwork.netlify.app/gallery/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/site.css?v=20260930-theme">
+  <link rel="stylesheet" href="../assets/css/gallery.css">
+</head>
+<body class="gallery-page">
+  <div class="gallery-atmosphere" aria-hidden="true"></div>
+  <header class="gallery-header">
+    <div class="gallery-nav">
+      <a href="../index.html" class="gallery-brand" data-transition>
+        <svg viewBox="0 0 26 26" fill="none" aria-hidden="true">
+          <circle cx="6" cy="6" r="2.4" fill="#62E6B3"/>
+          <circle cx="20" cy="6" r="2.4" fill="#62E6B3"/>
+          <circle cx="13" cy="20" r="2.4" fill="#A4F6D4"/>
+          <path d="M6 6L13 20M20 6L13 20M6 6L20 6" stroke="#62E6B3" stroke-width="1" opacity=".6"/>
+        </svg>
+        AXON 3D Intelligence
+      </a>
+      <nav class="gallery-links" id="navLinks" aria-label="Main navigation">
+        <a href="../index.html" data-transition>Home</a>
+        <a href="index.html" class="active" aria-current="page">Gallery</a>
+      </nav>
+      <div class="gallery-actions nav-cta">
+        <button class="gallery-burger" id="burger" type="button" aria-label="Toggle menu" aria-expanded="false" aria-controls="navLinks">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="gallery-main">
+    <section class="gallery-intro" aria-labelledby="gallery-title">
+      <p class="gallery-eyebrow">AXON 3D · Interactive AI concepts</p>
+      <h1 id="gallery-title">Model Gallery</h1>
+      <p>Explore the models in the AXON series. Open a live visualizer to interact with it, or select a planned model to learn what it will cover.</p>
+      <div class="gallery-counts" aria-label="Model availability">
+        <span><strong>2</strong> live models</span>
+        <span><strong>5</strong> planned models</span>
+        <span><strong>7</strong> models in the series</span>
+      </div>
+    </section>
+
+    <section aria-label="Browse models">
+      <div class="model-filters" aria-label="Filter models by category">
+        <button class="filter-btn active" type="button" data-filter="all" aria-pressed="true">All models</button>
+        <button class="filter-btn" type="button" data-filter="supervised" aria-pressed="false">Supervised</button>
+        <button class="filter-btn" type="button" data-filter="unsupervised" aria-pressed="false">Unsupervised</button>
+        <button class="filter-btn" type="button" data-filter="deep-learning" aria-pressed="false">Deep Learning</button>
+        <button class="filter-btn" type="button" data-filter="ensemble" aria-pressed="false">Ensemble</button>
+      </div>
+      <div class="models-grid" id="modelsGrid" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer class="gallery-footer">
+    <div class="gallery-footer-inner">
+      <span>© 2026 AXON 3D Intelligence</span>
+      <a href="../index.html" data-transition>← Back to AXON home</a>
+    </div>
+  </footer>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal-panel" id="modalPanel" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1"></div>
+  </div>
+
+  <script src="../assets/js/model-catalog.js"></script>
+  <script src="../assets/js/site.js?v=20260930-theme" defer></script>
+  <script src="../assets/js/gallery.js" defer></script>
+</body>
+</html>
