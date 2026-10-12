@@ -353,6 +353,7 @@
     productName: 'AXON 3D Intelligence',
     productVersion: '1.0.0',
     showBanner: unityShowBanner,
+    cacheControl: (url) => /\.unityweb(?:$|\?)/.test(url) ? 'must-revalidate' : 'no-store',
     devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2)
   };
   function unityShowBanner(msg, type) {

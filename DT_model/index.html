@@ -405,6 +405,9 @@
         productName: 'Decision Tree',
         productVersion: '1.0.0',
         showBanner: showUnityMessage,
+        cacheControl: function (url) {
+          return /\.unityweb(?:$|\?)/.test(url) ? 'must-revalidate' : 'no-store';
+        },
         devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2)
       };
 
