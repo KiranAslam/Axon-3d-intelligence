@@ -506,9 +506,9 @@
 
       var config = {
         arguments: [],
-        dataUrl: buildUrl + '/llm_model.data',
+        dataUrl: '',
         frameworkUrl: buildUrl + '/llm_model.framework.js',
-        codeUrl: buildUrl + '/llm_model.wasm',
+        codeUrl: '',
         streamingAssetsUrl: 'StreamingAssets',
         companyName: 'AXON 3D Intelligence',
         productName: 'LLM Visualizer',
@@ -516,6 +516,28 @@
         showBanner: showUnityMessage,
         devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2)
       };
+
+      function prepareGzipAsset(filename, contentType) {
+        if (typeof DecompressionStream !== 'function') {
+          return Promise.reject(new Error('This browser does not support gzip decompression.'));
+        }
+
+        return fetch(buildUrl + '/' + filename).then(function (response) {
+          if (!response.ok) {
+            throw new Error('Unable to download ' + filename + ' (HTTP ' + response.status + ').');
+          }
+          if (!response.body) {
+            throw new Error('Streaming downloads are not supported for ' + filename + '.');
+          }
+
+          var decompressed = response.body.pipeThrough(new DecompressionStream('gzip'));
+          return new Response(decompressed, {
+            headers: { 'Content-Type': contentType }
+          }).blob();
+        }).then(function (blob) {
+          return URL.createObjectURL(blob);
+        });
+      }
 
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         container.className = 'unity-mobile';
@@ -526,16 +548,23 @@
       var loader = document.createElement('script');
       loader.src = buildUrl + '/llm_model.loader.js';
       loader.onload = function () {
-        createUnityInstance(canvas, config, function (progress) {
-          progressBar.style.width = (100 * progress) + '%';
+        Promise.all([
+          prepareGzipAsset('llm_model.data.gz', 'application/octet-stream'),
+          prepareGzipAsset('llm_model.wasm.gz', 'application/wasm')
+        ]).then(function (assets) {
+          config.dataUrl = assets[0];
+          config.codeUrl = assets[1];
+          return createUnityInstance(canvas, config, function (progress) {
+            progressBar.style.width = (100 * progress) + '%';
+          });
         }).then(function (unityInstance) {
           loadingBar.style.display = 'none';
           splashCover.style.display = 'none';
           document.getElementById('unity-fullscreen-button').onclick = function () {
             unityInstance.SetFullscreen(1);
           };
-        }).catch(function (message) {
-          showUnityMessage(message, 'error');
+        }).catch(function (error) {
+          showUnityMessage(error.message || error, 'error');
           loadingBar.style.display = 'none';
         });
       };
