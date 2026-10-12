@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neural Network Visualizer | AXON 3D Intelligence</title>
+<meta name="description" content="Learn how a handwritten-digit neural network works through an interactive 3D visualizer and focused machine-learning guides.">
+<meta name="robots" content="index, follow">
+<meta name="author" content="AXON 3D Intelligence">
+<meta name="theme-color" content="#061411">
+<link rel="canonical" href="https://axon3dintelligence-nueralnetwork.netlify.app/nn-model/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Neural Network Visualizer | AXON 3D Intelligence">
+<meta property="og:description" content="Explore a handwritten-digit neural network from pixels to prediction with an interactive 3D visualizer.">
+<meta property="og:url" content="https://axon3dintelligence-nueralnetwork.netlify.app/nn-model/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="TemplateData/style.css">
+<link rel="stylesheet" href="../assets/css/site.css?v=20260930-theme">
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"WebSite",
+  "name":"AXON 3D Intelligence",
+  "url":"https://axon3dintelligence-nueralnetwork.netlify.app/nn-model/",
+  "description":"Interactive educational visualization of a handwritten-digit neural network."
+}
+</script>
+<style>
+  :root{
+    --border:var(--line);
+    --accent-light:var(--accent-2);
+    --blue-glow:rgba(76,145,255,0.05);
+    --copyright:#6F8B81;
+    --meta:#7FA095;
+    --panel-2:#102821;
+  }
+
+  /* page-transition fade, matches the main hub page */
+  body{animation:pageIn .5s ease both;}
+  @keyframes pageIn{from{opacity:0;} to{opacity:1;}}
+  body.leaving{opacity:0; transition:opacity .25s ease;}
+  @media (prefers-reduced-motion:reduce){ body{animation:none;} body.leaving{transition:none; opacity:1;} }
+
+  .breadcrumbs{width:min(var(--max),calc(100% - 36px)); margin:22px auto 0;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 28px; position:relative; z-index:1;}
+
+  .atmosphere{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(560px 420px at 8% 6%, rgba(98,230,179,0.07), transparent 65%),
+      radial-gradient(620px 480px at 96% 30%, var(--blue-glow), transparent 70%),
+      radial-gradient(500px 400px at 50% 100%, rgba(98,230,179,0.04), transparent 70%);
+  }
+  .floaters{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;}
+  .floaters span{
+    position:absolute;
+    width:6px; height:6px;
+    border-radius:50%;
+    background:var(--accent);
+    opacity:.35;
+    filter:blur(.5px);
+    animation:floatUp 14s linear infinite;
+  }
+  @keyframes floatUp{
+    from{transform:translateY(0) translateX(0); opacity:0;}
+    10%{opacity:.35;}
+    90%{opacity:.2;}
+    to{transform:translateY(-120vh) translateX(20px); opacity:0;}
+  }
+
+  header.site{
+    position:sticky; top:0; z-index:100;
+    padding-top:env(safe-area-inset-top,0px);
+    background:rgba(6,20,17,0.72);
+    backdrop-filter:blur(14px) saturate(1.2);
+    border-bottom:1px solid var(--border);
+  }
+  .nav-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 28px; max-width:1180px; margin:0 auto;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-weight:600; font-size:17px; letter-spacing:.01em;
+    text-decoration:none;
+  }
+  .brand .mark{width:26px; height:26px; display:block;}
+  nav.links{display:flex; gap:8px; font-size:14px; color:var(--muted);}
+  nav.links a{
+    text-decoration:none; color:var(--muted);
+    padding:8px 14px; border-radius:20px;
+    transition:color .2s ease, background .2s ease;
+    position:relative;
+  }
+  nav.links a:hover{color:var(--accent-light); background:rgba(189,245,224,0.06);}
+  nav.links a.active{color:var(--bg); background:var(--accent); font-weight:600;}
+  .nav-cta{display:flex; align-items:center; gap:14px;}
+  .burger{display:none; flex-direction:column; gap:4px; background:none; border:none; cursor:pointer; padding:8px;}
+  .burger span{width:20px; height:2px; background:var(--text); display:block; border-radius:2px;}
+  @media (max-width:880px){
+    nav.links{
+      position:fixed; top:64px; left:0; right:0;
+      background:var(--bg-soft); border-bottom:1px solid var(--border);
+      flex-direction:column; padding:14px 20px; gap:2px;
+      transform:translateY(-8px); opacity:0; pointer-events:none;
+      transition:opacity .25s ease, transform .25s ease;
+    }
+    nav.links.open{transform:translateY(0); opacity:1; pointer-events:auto;}
+    nav.links a{padding:12px 8px; border-radius:8px;}
+    .burger{display:flex;}
+  }
+
+  footer.site{border-top:1px solid var(--border); padding:56px 0 0; background:var(--bg-soft); margin-top:0;}
+  .footer-grid{display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; gap:40px; padding:48px 0 40px;}
+  @media (max-width:900px){.footer-grid{grid-template-columns:1fr 1fr;}}
+  @media (max-width:600px){.footer-grid{grid-template-columns:1fr;}}
+  .footer-brand .brand{margin-bottom:14px;}
+  .footer-brand p{color:var(--muted); font-size:13.5px; line-height:1.7; max-width:320px;}
+  .footer-col h4{font-size:12.5px; color:var(--meta); margin:0 0 16px; font-weight:600;}
+  .footer-col a{display:block; color:var(--muted); text-decoration:none; font-size:14px; margin-bottom:11px; transition:color .2s ease;}
+  .footer-col a:hover{color:var(--accent-light);}
+  .footer-bottom{
+    border-top:1px solid var(--border); padding:22px 0; display:flex;
+    justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;
+    color:var(--copyright); font-size:12.5px;
+  }
+  .back-to-top{
+    background:var(--panel-2); border:1px solid var(--border); color:var(--muted);
+    width:36px; height:36px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center;
+    text-decoration:none; transition:color .2s ease, border-color .2s ease, transform .2s ease;
+  }
+  .back-to-top:hover{color:var(--accent-light); border-color:var(--accent); transform:translateY(-2px);}
+  #unity-footer{
+    position:absolute!important; inset:auto 0 0!important; z-index:6;
+    display:flex!important; align-items:center; justify-content:flex-start;
+    padding:14px; background:linear-gradient(transparent,rgba(0,0,0,.4));
+    pointer-events:none;
+  }
+  #unity-build-title{display:none;}
+  #unity-fullscreen-button{
+    width:36px; height:36px; padding:0; border:1px solid var(--line);
+    border-radius:10px; display:inline-flex; align-items:center; justify-content:center;
+    background:var(--panel)!important; color:var(--accent);
+    box-shadow:var(--shadow); cursor:pointer; pointer-events:auto;
+    transition:background .2s ease,border-color .2s ease,color .2s ease,transform .2s ease;
+  }
+  #unity-fullscreen-button:hover{
+    background:var(--panel-2)!important; border-color:var(--accent); color:var(--accent-2);
+    transform:translateY(-1px);
+  }
+  #unity-fullscreen-button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
+  #unity-fullscreen-button svg{width:16px;height:16px;display:block;}
+  #unity-splash-cover{
+    position:absolute; inset:0; z-index:4; pointer-events:none;
+    background:var(--bg);
+  }
+  #unity-loading-bar{background:var(--panel); color:var(--text); box-shadow:var(--shadow);}
+  #unity-progress-bar-empty{background:var(--panel-2)!important;}
+  #unity-caption{background:var(--panel); color:var(--text);}
+</style>
+</head>
+<body>
+<div class="atmosphere"></div>
+<div class="floaters" id="floaters"></div>
+<header class="site">
+  <div class="nav-row">
+    <a href="../index.html" class="brand" data-transition>
+      <svg class="mark" viewBox="0 0 26 26" fill="none">
+        <circle cx="6" cy="6" r="2.4" fill="#62E6B3"/>
+        <circle cx="20" cy="6" r="2.4" fill="#62E6B3"/>
+        <circle cx="13" cy="20" r="2.4" fill="#A4F6D4"/>
+        <path d="M6 6L13 20M20 6L13 20M6 6L20 6" stroke="#62E6B3" stroke-width="1" opacity="0.6"/>
+      </svg>
+      AXON 3D Intelligence
+    </a>
+    <nav class="links" id="navLinks">
+      <a href="../gallery/index.html" data-transition>Gallery</a>
+      <a href="index.html" class="active">Visualizer</a>
+      <a href="learn/index.html">Learn</a>
+    </nav>
+    <div class="nav-cta">
+      <button class="burger" id="burger" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="scroll-content">
+
+  <!-- ===== THE MODEL ITSELF ===== -->
+  <section id="unity-sticky-wrapper" aria-label="Interactive neural network visualizer">
+    <div id="unity-frame">
+      <div id="unity-container" class="unity-desktop">
+        <canvas id="unity-canvas" width="1" height="1" tabindex="-1" aria-label="AXON interactive neural network"></canvas>
+        <div id="unity-splash-cover" aria-hidden="true"></div>
+        <div id="unity-loading-bar">
+          <div id="unity-progress-bar-empty"><div id="unity-progress-bar-full"></div></div>
+        </div>
+        <div id="unity-warning"></div>
+        <div id="unity-footer">
+          <button id="unity-fullscreen-button" type="button" aria-label="Enter fullscreen" title="Enter fullscreen">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M8 4H4v4m12-4h4v4M20 16v4h-4M4 16v4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div id="unity-build-title">AXON 3D</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== DETAILS BELOW ===== -->
+  <section id="how-it-works" class="reveal">
+    <div class="section-heading">
+      <div><span class="eyebrow">01 · Architecture</span><h2>From 784 pixels to one prediction</h2></div>
+      <p>The network is a compact feedforward model. Each stage transforms the representation before passing it forward.</p>
+    </div>
+    <div class="arch-overview">
+      <article class="arch-item reveal"><span class="tag">Input layer</span><h3>784 neurons</h3><p>One value for every pixel in the 28×28 drawing grid. The image becomes numerical input for the network.</p></article>
+      <article class="arch-item reveal"><span class="tag">Hidden layers</span><h3>128 → 64 neurons</h3><p>Learned weights, biases and ReLU activations transform the input into increasingly compact representations.</p></article>
+      <article class="arch-item reveal"><span class="tag">Output layer</span><h3>10 classes</h3><p>Ten output neurons represent digits 0–9. Softmax turns the final scores into a probability distribution.</p></article>
+    </div>
+  </section>
+
+  <article class="feature-card reveal"><div class="num">1</div><div><h2>The input layer</h2><p>Your drawing is represented as a 28×28 grid, giving 784 numerical values. The network receives numbers rather than a human-style visual understanding of the picture.</p><p>That conversion is the bridge between an image and machine-learning computation.</p></div></article>
+  <article class="feature-card reveal"><div class="num">2</div><div><h2>Weights, bias and activation</h2><p>Every neuron receives values from the previous layer. Each connection has a learned <strong>weight</strong>, and each neuron has a <strong>bias</strong>. Together they produce a weighted sum.</p><div class="formula-box"><span class="var">z</span> <span class="op">=</span> (w₁·x₁ + w₂·x₂ + ... + wₙ·xₙ) + bias
+<span class="var">activation</span> <span class="op">=</span> ReLU(z) = max(0, z)</div><p>ReLU removes negative values and introduces non-linearity, allowing stacked layers to learn richer patterns than a purely linear transformation.</p></div></article>
+  <article class="feature-card reveal"><div class="num">3</div><div><h2>The output layer</h2><p>The final layer contains ten neurons corresponding to digits 0 through 9. Their raw scores, called <strong>logits</strong>, are converted into probabilities using softmax.</p><div class="formula-box">P(digit i) = exp(zᵢ) / Σ exp(zⱼ)</div><p>The highest-probability class becomes the displayed prediction.</p></div></article>
+
+  <section class="prose-section reveal">
+    <div class="section-heading"><div><span class="eyebrow">02 · Training</span><h2>How the model learns</h2></div><p>The interactive application uses trained parameters rather than inventing connection values during the demonstration.</p></div>
+    <p>This project uses a neural network trained with <strong>TensorFlow/Keras</strong>. Its trained parameters are used by the Unity WebGL application to process a drawing and calculate the model's response in the browser.</p>
+    <div class="stat-pills">
+      <div class="stat-pill"><strong>28×28</strong> input grid</div>
+      <div class="stat-pill"><strong>784</strong> input neurons</div>
+      <div class="stat-pill"><strong>128 → 64</strong> hidden layers</div>
+      <div class="stat-pill"><strong>10</strong> output classes</div>
+      <div class="stat-pill"><strong>ReLU</strong> hidden activation</div>
+      <div class="stat-pill"><strong>Softmax</strong> output</div>
+    </div>
+    <div class="callout"><strong>About model metrics</strong><p>Project-specific training statistics should be interpreted in the context of the exact training and evaluation setup used for this model. They are not guarantees of performance on every possible handwritten digit.</p></div>
+  </section>
+
+  <section class="prose-section reveal">
+    <div class="section-heading"><div><span class="eyebrow">03 · Interaction</span><h2>Learn by exploring</h2></div><p>The visualizer is designed to make an abstract forward pass easier to inspect.</p></div>
+    <ul>
+      <li><strong>Draw a digit</strong> and observe the model's response.</li>
+      <li><strong>Select neurons</strong> to inspect values, biases and connections where supported by the visualization.</li>
+      <li><strong>Rotate, pan and zoom</strong> the 3D scene to understand how the layers are arranged.</li>
+      <li><strong>Compare outputs</strong> by changing the input and observing how the probability distribution changes.</li>
+    </ul>
+  </section>
+
+  <section class="prose-section reveal">
+    <div class="section-heading"><div><span class="eyebrow">04 · Technology</span><h2>How this model is built</h2></div><p>The website provides the learning context while the Unity application provides the interactive 3D experience.</p></div>
+    <p>The project uses <strong>Unity WebGL</strong> for the browser-based visualization, with matrix operations, ReLU and softmax calculations performed in C# inside the Unity application.</p>
+    <p>Explore the <a class="text-link" href="learn/index.html">learning guides</a> to understand the ideas behind the model, from neural-network inputs to predictions.</p>
+  </section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="../index.html" class="brand" data-transition>
+          <svg class="mark" viewBox="0 0 26 26" fill="none">
+            <circle cx="6" cy="6" r="2.4" fill="#62E6B3"/><circle cx="20" cy="6" r="2.4" fill="#62E6B3"/>
+            <circle cx="13" cy="20" r="2.4" fill="#A4F6D4"/><path d="M6 6L13 20M20 6L13 20M6 6L20 6" stroke="#62E6B3" stroke-width="1" opacity="0.6"/>
+          </svg>
+          AXON 3D Intelligence
+        </a>
+        <p>An interactive gallery of AI concepts, rebuilt as 3D models you can explore in the browser.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Explore</h4>
+        <a href="../index.html" data-transition>Gallery</a>
+        <a href="index.html">Visualizer</a>
+        <a href="learn/index.html">Learn</a>
+      </div>
+      <div class="footer-col">
+        <h4>Project</h4>
+        <a href="../pages/about.html">About the project</a>
+        <a href="../pages/contact.html">Contact page</a>
+        <a href="mailto:axon.3d.intelligence.1@gmail.com">axon.3d.intelligence.1@gmail.com</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="../pages/privacy.html">Privacy Policy</a>
+        <a href="../pages/terms.html">Terms of Use</a>
+        <a href="../pages/disclaimer.html">Disclaimer</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 AXON 3D Intelligence. All rights reserved.</span>
+      <span style="display:flex; align-items:center; gap:14px;">Built with Unity WebGL, TensorFlow &amp; C#.
+        <a class="back-to-top" href="#top" aria-label="Back to top">↑</a>
+      </span>
+    </div>
+  </div>
+</footer>
+
+<script src="../assets/js/site.js?v=20260930-theme" defer></script>
+<script>
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!reduce){
+    var fc = document.getElementById('floaters');
+    for(var i=0;i<14;i++){
+      var s = document.createElement('span');
+      s.style.left = (Math.random()*100)+'%';
+      s.style.bottom = '-10px';
+      s.style.animationDuration = (10+Math.random()*10)+'s';
+      s.style.animationDelay = (Math.random()*14)+'s';
+      fc.appendChild(s);
+    }
+  }
+
+  var burger = document.getElementById('burger');
+  var navLinks = document.getElementById('navLinks');
+  burger.addEventListener('click', function(){
+    var open = navLinks.classList.toggle('open');
+    burger.setAttribute('aria-expanded', open);
+  });
+  navLinks.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){ navLinks.classList.remove('open'); });
+  });
+
+  /* smooth fade transition to internal pages (matches main hub) */
+  document.querySelectorAll('a[data-transition]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var href = a.getAttribute('href');
+      if (!href || a.target === '_blank') return;
+      e.preventDefault();
+      document.body.classList.add('leaving');
+      setTimeout(function(){ window.location.href = href; }, 220);
+    });
+  });
+
+  const canvas = document.querySelector('#unity-canvas');
+  const buildUrl = 'Build';
+  const loaderUrl = buildUrl + '/NN_Model.loader.js';
+  const config = {
+    arguments: [],
+    dataUrl: buildUrl + '/NN_Model.data.unityweb',
+    frameworkUrl: buildUrl + '/NN_Model.framework.js.unityweb',
+    codeUrl: buildUrl + '/NN_Model.wasm.unityweb',
+    streamingAssetsUrl: 'StreamingAssets',
+    companyName: 'AXON 3D Intelligence',
+    productName: 'AXON 3D Intelligence',
+    productVersion: '1.0.0',
+    showBanner: unityShowBanner,
+    devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2)
+  };
+  function unityShowBanner(msg, type) {
+    const warningBanner = document.querySelector('#unity-warning');
+    warningBanner.textContent = msg;
+    warningBanner.style.display = 'block';
+    warningBanner.style.background = type === 'error' ? '#8b2020' : '#7b6614';
+    setTimeout(() => warningBanner.style.display = 'none', 5000);
+  }
+  if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+    document.querySelector('#unity-container').className = 'unity-mobile';
+    canvas.className = 'unity-mobile';
+  }
+  document.querySelector('#unity-loading-bar').style.display = 'block';
+  const script = document.createElement('script');
+  script.src = loaderUrl;
+  script.onload = () => {
+    createUnityInstance(canvas, config, (progress) => {
+      document.querySelector('#unity-progress-bar-full').style.width = (100 * progress) + '%';
+    }).then((unityInstance) => {
+      document.querySelector('#unity-loading-bar').style.display = 'none';
+      document.querySelector('#unity-splash-cover').style.display = 'none';
+      const fullscreenButton = document.querySelector('#unity-fullscreen-button');
+      if (fullscreenButton) fullscreenButton.onclick = () => unityInstance.SetFullscreen(1);
+    }).catch((message) => unityShowBanner(message, 'error'));
+  };
+  script.onerror = () => unityShowBanner('The Unity build could not be loaded. Please make sure the Build folder is deployed with this site.', 'error');
+  document.body.appendChild(script);
+</script>
+</body>
+</html>
