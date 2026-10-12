@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AXON 3D Intelligence — Interactive AI Concept Models</title>
+<meta name="description" content="AXON 3D Intelligence turns abstract AI concepts into interactive 3D models you can rotate, inspect and run in the browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#061411;
+    --bg-soft:#0A1B17;
+    --panel:#0D211C;
+    --panel-2:#102821;
+    --viz-bg:#07110E;
+    --text:#EDF8F3;
+    --muted:#A9C3B9;
+    --accent:#62E6B3;
+    --accent-light:#A4F6D4;
+    --border:rgba(189,245,224,0.12);
+    --border-strong:rgba(189,245,224,0.28);
+    --blue-glow:rgba(76,145,255,0.05);
+    --copyright:#6F8B81;
+    --meta:#7FA095;
+    --glass:rgba(13,33,28,0.55);
+    --shadow-soft:0 10px 30px -12px rgba(0,0,0,0.55);
+    --shadow-strong:0 24px 60px -20px rgba(0,0,0,0.65);
+    --ease:cubic-bezier(.19,1,.22,1);
+  }
+  html[data-theme="light"]{
+    color-scheme:light;
+    --bg:#f7faf8;
+    --bg-soft:#edf3f0;
+    --panel:#ffffff;
+    --panel-2:#e6efeb;
+    --viz-bg:#07110e;
+    --text:#172720;
+    --muted:#50655b;
+    --accent:#147a57;
+    --accent-light:#2e9c70;
+    --border:rgba(22,58,43,.14);
+    --border-strong:rgba(22,58,43,.28);
+    --blue-glow:rgba(76,145,255,.035);
+    --copyright:#52685d;
+    --meta:#50685c;
+    --glass:rgba(255,255,255,.82);
+    --shadow-soft:0 10px 30px -12px rgba(22,58,43,.14);
+    --shadow-strong:0 24px 60px -20px rgba(22,58,43,.2);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth; scroll-padding-top:88px;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    position:relative;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    animation:pageIn .6s ease both;
+  }
+  @keyframes pageIn{from{opacity:0;} to{opacity:1;}}
+  body.leaving{opacity:0; transition:opacity .22s ease;}
+  @media (prefers-reduced-motion:reduce){ body.leaving{transition:none; opacity:1;} }
+  h1,h2,h3,.brand{font-family:'Space Grotesk',system-ui,sans-serif;}
+  ::selection{background:var(--accent); color:#04140f;}
+  a{color:inherit;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 28px; position:relative; z-index:1;}
+
+  /* ---------- atmosphere ---------- */
+  .atmosphere{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(560px 420px at 8% 6%, rgba(98,230,179,0.07), transparent 65%),
+      radial-gradient(620px 480px at 96% 30%, var(--blue-glow), transparent 70%),
+      radial-gradient(500px 400px at 50% 100%, rgba(98,230,179,0.04), transparent 70%);
+  }
+  .floaters{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;}
+  .floaters span{
+    position:absolute;
+    width:6px; height:6px;
+    border-radius:50%;
+    background:var(--accent);
+    opacity:.35;
+    filter:blur(.5px);
+    animation:floatUp 14s linear infinite;
+  }
+  @keyframes floatUp{
+    from{transform:translateY(0) translateX(0); opacity:0;}
+    10%{opacity:.35;}
+    90%{opacity:.2;}
+    to{transform:translateY(-120vh) translateX(20px); opacity:0;}
+  }
+
+  /* ---------- reveal-on-scroll ---------- */
+  .reveal{opacity:0; transform:translateY(22px); transition:opacity .7s var(--ease), transform .7s var(--ease);}
+  .reveal.visible{opacity:1; transform:translateY(0);}
+  .reveal-stagger.visible > *{opacity:1; transform:translateY(0);}
+  .reveal-stagger > *{opacity:0; transform:translateY(18px); transition:opacity .6s var(--ease), transform .6s var(--ease);}
+  .reveal-stagger > *:nth-child(1){transition-delay:.02s;}
+  .reveal-stagger > *:nth-child(2){transition-delay:.10s;}
+  .reveal-stagger > *:nth-child(3){transition-delay:.18s;}
+  .reveal-stagger > *:nth-child(4){transition-delay:.26s;}
+  .reveal-stagger > *:nth-child(5){transition-delay:.34s;}
+  .reveal-stagger > *:nth-child(6){transition-delay:.42s;}
+  .reveal-stagger > *:nth-child(7){transition-delay:.50s;}
+  @media (prefers-reduced-motion:reduce){
+    .reveal, .reveal-stagger > *{opacity:1 !important; transform:none !important; transition:none !important;}
+    .floaters{display:none;}
+  }
+
+  /* ---------- header ---------- */
+  header.site{
+    position:sticky; top:0; z-index:100;
+    padding-top:env(safe-area-inset-top,0px);
+    background:rgba(6,20,17,0.72);
+    backdrop-filter:blur(14px) saturate(1.2);
+    border-bottom:1px solid var(--border);
+  }
+  html[data-theme="light"] header.site{background:rgba(247,250,248,.88);}
+  .nav-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 28px; max-width:1180px; margin:0 auto;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-weight:600; font-size:17px; letter-spacing:.01em;
+    text-decoration:none;
+  }
+  .brand .mark{width:26px; height:26px; display:block;}
+  nav.links{display:flex; gap:8px; font-size:14px; color:var(--muted);}
+  nav.links a{
+    text-decoration:none; color:var(--muted);
+    padding:8px 14px; border-radius:20px;
+    transition:color .2s ease, background .2s ease;
+    position:relative;
+  }
+  nav.links a:hover{color:var(--accent-light); background:rgba(189,245,224,0.06);}
+  nav.links a.active{color:var(--bg); background:var(--accent); font-weight:600;}
+  html[data-theme="light"] nav.links a.active{color:#fff;}
+  html[data-theme="light"] .btn-primary{color:#fff;}
+  html[data-theme="light"] .filter-btn.active,
+  html[data-theme="light"] .status-tag.live{color:#fff;}
+  .nav-cta{display:flex; align-items:center; gap:14px;}
+  .theme-toggle{
+    display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:36px;
+    padding:5px 10px; border:1px solid var(--border); border-radius:999px;
+    background:rgba(255,255,255,0.04); color:var(--text); font:600 12px/1 'Inter',sans-serif;
+    cursor:pointer; white-space:nowrap; transition:background .2s ease,border-color .2s ease,color .2s ease;
+  }
+  .theme-toggle:hover{border-color:var(--accent);}
+  .theme-toggle:focus-visible{outline:2px solid var(--accent); outline-offset:3px;}
+  .theme-toggle-track{width:27px; height:16px; padding:2px; border-radius:99px; background:var(--panel-2); display:flex; align-items:center;}
+  .theme-toggle-track span{width:12px; height:12px; border-radius:50%; background:var(--accent); transition:transform .2s ease;}
+  html[data-theme="light"] .theme-toggle{color:var(--text); border-color:var(--border); background:#fff;}
+  html[data-theme="light"] .theme-toggle-track span{transform:translateX(11px);}
+  .burger{display:none; flex-direction:column; gap:4px; background:none; border:none; cursor:pointer; padding:8px;}
+  .burger span{width:20px; height:2px; background:var(--text); display:block; border-radius:2px;}
+  @media (max-width:880px){
+    nav.links{
+      position:fixed; top:64px; left:0; right:0;
+      background:var(--bg-soft); border-bottom:1px solid var(--border);
+      flex-direction:column; padding:14px 20px; gap:2px;
+      transform:translateY(-8px); opacity:0; pointer-events:none;
+      transition:opacity .25s ease, transform .25s ease;
+    }
+    nav.links.open{transform:translateY(0); opacity:1; pointer-events:auto;}
+    nav.links a{padding:12px 8px; border-radius:8px;}
+    .burger{display:flex;}
+  }
+
+  /* ---------- buttons ---------- */
+  .btn-primary{
+    background:linear-gradient(135deg,var(--accent),var(--accent-light));
+    color:#04140f; font-weight:600; font-size:14.5px;
+    padding:13px 24px; border-radius:8px; text-decoration:none;
+    display:inline-flex; align-items:center; gap:8px; border:none; cursor:pointer;
+    box-shadow:0 8px 24px -8px rgba(98,230,179,0.45);
+    transition:transform .25s var(--ease), box-shadow .25s var(--ease);
+  }
+  .btn-primary:hover{transform:translateY(-2px); box-shadow:0 14px 32px -10px rgba(98,230,179,0.6);}
+  .btn-primary:active{transform:translateY(0);}
+  .btn-secondary{
+    border:1px solid var(--border-strong); color:var(--text);
+    font-size:14.5px; padding:13px 22px; border-radius:8px; text-decoration:none;
+    background:rgba(255,255,255,0.02);
+    transition:border-color .2s ease, background .2s ease, transform .25s var(--ease);
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .btn-secondary:hover{border-color:var(--accent); background:rgba(98,230,179,0.06); transform:translateY(-2px);}
+  a:focus-visible, button:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:4px;}
+
+  /* ---------- hero ---------- */
+  .hero{padding:88px 0 56px; position:relative;}
+  .hero-grid{display:grid; grid-template-columns:1.15fr .85fr; gap:56px; align-items:center;}
+  @media (max-width:860px){.hero-grid{grid-template-columns:1fr;}}
+  .hero-copy .kicker{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:13px; color:var(--accent); margin-bottom:22px;
+    border:1px solid var(--border); padding:6px 14px; border-radius:20px;
+    background:rgba(98,230,179,0.05);
+  }
+  .kicker .dot{width:6px; height:6px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px var(--accent); animation:blinkDot 2s ease-in-out infinite;}
+  @keyframes blinkDot{50%{opacity:.3;}}
+  .hero-copy h1{
+    font-size:clamp(34px,4.6vw,56px); line-height:1.08; font-weight:600;
+    margin:0 0 22px; letter-spacing:-.01em;
+  }
+  .hero-copy h1 span{display:block;}
+  .hero-copy h1 span:nth-child(2){color:var(--accent-light);}
+  .hero-copy p.lede{color:var(--muted); font-size:16.5px; line-height:1.7; max-width:500px; margin:0 0 32px;}
+  .hero-cta{display:flex; gap:16px; flex-wrap:wrap; margin-bottom:48px;}
+  .hero-stats{display:flex; gap:36px; flex-wrap:wrap;}
+  .hero-stats div{min-width:100px;}
+  .stat-number{
+    font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:700;
+    color:var(--accent-light); display:block; margin-bottom:4px;
+  }
+  .hero-stats span.label{color:var(--meta); font-size:12.5px;}
+
+  .hero-visual{
+    background:var(--viz-bg); border:1px solid var(--border); border-radius:14px;
+    aspect-ratio:1/0.85; position:relative; overflow:hidden;
+    box-shadow:var(--shadow-strong);
+  }
+  .hero-visual::before{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(circle at 30% 20%, rgba(98,230,179,0.08), transparent 60%);
+  }
+  .hero-visual svg{width:100%; height:100%; position:relative;}
+  .node{fill:var(--accent);}
+  .node.dim{fill:var(--meta); opacity:.5;}
+  .edge{stroke:var(--accent); stroke-width:1; opacity:.35;}
+  .pulse{animation:pulseNode 3.2s ease-in-out infinite;}
+  @keyframes pulseNode{0%,100%{opacity:.4; r:3;} 50%{opacity:1; r:5;}}
+  @media (prefers-reduced-motion:reduce){.pulse{animation:none;}}
+
+  /* ---------- section shared ---------- */
+  section{padding:88px 0;}
+  .section-head{max-width:640px; margin-bottom:48px;}
+  .section-head .eyebrow{
+    font-size:12.5px; color:var(--accent); margin-bottom:14px;
+    text-transform:none; display:flex; align-items:center; gap:8px;
+  }
+  .section-head .eyebrow::before{content:""; width:18px; height:1px; background:var(--accent); display:inline-block;}
+  .section-head h2{font-size:clamp(24px,3vw,34px); font-weight:600; margin:0 0 14px; letter-spacing:-.01em;}
+  .section-head p{color:var(--muted); font-size:15px; line-height:1.7; margin:0;}
+  .divider{border-top:1px solid var(--border);}
+
+  /* ---------- about ---------- */
+  .about-stats{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:18px;
+  }
+  @media (max-width:700px){.about-stats{grid-template-columns:1fr;}}
+  .about-stats div{
+    background:var(--panel); border:1px solid var(--border); border-radius:12px;
+    padding:28px 24px; transition:transform .3s var(--ease), border-color .3s ease, box-shadow .3s ease;
+  }
+  .about-stats div:hover{transform:translateY(-4px); border-color:var(--border-strong); box-shadow:var(--shadow-soft);}
+  .about-stats b{display:block; font-family:'Space Grotesk',sans-serif; font-size:26px; color:var(--accent-light); margin-bottom:8px; font-weight:600;}
+  .about-stats span{color:var(--muted); font-size:13.5px; line-height:1.5;}
+
+  /* ---------- skills strip ---------- */
+  .skills-strip{
+    display:flex; flex-wrap:wrap; gap:12px; margin-top:40px;
+  }
+  .skill-chip{
+    display:flex; align-items:center; gap:10px;
+    background:var(--panel); border:1px solid var(--border); border-radius:24px;
+    padding:10px 18px; font-size:13.5px; color:var(--muted);
+    transition:transform .25s var(--ease), border-color .25s ease, color .25s ease;
+  }
+  .skill-chip:hover{transform:translateY(-3px); border-color:var(--accent); color:var(--text);}
+  .skill-chip .sw{width:8px; height:8px; border-radius:50%; background:var(--accent);}
+
+  /* ---------- MODELS SHOWCASE ---------- */
+  .model-filters{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:32px;}
+  .filter-btn{
+    background:transparent; border:1px solid var(--border); color:var(--muted);
+    padding:8px 16px; border-radius:20px; font-size:13px; cursor:pointer;
+    transition:all .2s ease;
+  }
+  .filter-btn:hover{color:var(--text); border-color:var(--border-strong);}
+  .filter-btn.active{background:var(--accent); color:#04140f; border-color:var(--accent); font-weight:600;}
+
+  .models-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:22px;}
+
+  .mcard{
+    background:var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding:0; position:relative; overflow:hidden; cursor:pointer;
+    transition:transform .35s var(--ease), border-color .35s ease, box-shadow .35s ease;
+    display:flex; flex-direction:column;
+  }
+  .mcard:hover, .mcard:focus-visible{
+    transform:translateY(-6px);
+    border-color:var(--border-strong);
+    box-shadow:var(--shadow-strong);
+  }
+  .mcard-top{
+    height:120px; position:relative;
+    background:var(--viz-bg);
+    border-bottom:1px solid var(--border);
+    background-image:
+      linear-gradient(rgba(189,245,224,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(189,245,224,0.05) 1px, transparent 1px);
+    background-size:16px 16px;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+  }
+  .mcard-icon{width:52px; height:52px; position:relative; z-index:1;}
+  .mcard-icon svg{width:100%; height:100%;}
+  .status-tag{
+    position:absolute; top:14px; right:14px; z-index:2;
+    font-size:10.5px; color:var(--meta);
+    background:rgba(6,20,17,0.75); backdrop-filter:blur(4px);
+    border:1px solid var(--border); padding:4px 10px; border-radius:20px;
+  }
+  .status-tag.live{color:#04140f; background:var(--accent); border-color:var(--accent); font-weight:600;}
+  .type-tag{
+    position:absolute; top:14px; left:14px; z-index:2;
+    font-size:10.5px; color:var(--accent-light);
+    background:rgba(6,20,17,0.75); backdrop-filter:blur(4px);
+    border:1px solid var(--border); padding:4px 10px; border-radius:20px;
+  }
+  .sparkline{position:absolute; bottom:0; left:0; right:0; height:34px; display:flex; align-items:flex-end; gap:3px; padding:0 14px 6px; opacity:0; transition:opacity .3s ease;}
+  .mcard:hover .sparkline{opacity:1;}
+  .sparkline i{
+    flex:1; background:linear-gradient(180deg,var(--accent-light),var(--accent));
+    border-radius:2px 2px 0 0; transform:scaleY(0); transform-origin:bottom;
+    transition:transform .5s var(--ease);
+  }
+  .mcard:hover .sparkline i{transform:scaleY(var(--h));}
+
+  .mcard-body{padding:22px 22px 20px; display:flex; flex-direction:column; flex:1;}
+  .mcard-body h3{font-size:19px; margin:0 0 8px; font-weight:600;}
+  .mcard-body p.desc{color:var(--muted); font-size:13.5px; line-height:1.6; margin:0 0 16px;}
+
+  .metric-row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;}
+  .metric-badge{
+    background:var(--panel-2); border:1px solid var(--border); border-radius:8px;
+    padding:8px 10px; min-width:78px;
+  }
+  .metric-badge b{display:block; font-family:'Space Grotesk',sans-serif; font-size:15px; color:var(--accent-light); font-weight:600;}
+  .metric-badge span{font-size:10.5px; color:var(--meta);}
+
+  .progress-line{height:5px; border-radius:4px; background:var(--panel-2); overflow:hidden; margin-bottom:16px;}
+  .progress-line i{display:block; height:100%; background:linear-gradient(90deg,var(--accent),var(--accent-light)); width:0; border-radius:4px; transition:width 1s var(--ease);}
+  .mcard.animated .progress-line i{width:var(--pct);}
+
+  .extra-metrics{max-height:0; overflow:hidden; transition:max-height .4s var(--ease), opacity .3s ease; opacity:0;}
+  .mcard:hover .extra-metrics{max-height:60px; opacity:1; margin-bottom:14px;}
+
+  .tag-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:auto;}
+  .tag-row span{
+    font-size:11px; color:var(--muted); border:1px solid var(--border);
+    padding:4px 9px; border-radius:20px;
+  }
+  .view-hint{
+    display:flex; align-items:center; gap:6px;
+    font-size:12px; color:var(--meta); margin-top:16px;
+  }
+  .mcard:hover .view-hint{color:var(--accent-light);}
+
+  /* ---------- modal ---------- */
+  .modal-backdrop{
+    position:fixed; inset:0; z-index:200; background:rgba(4,13,10,0.7);
+    backdrop-filter:blur(6px);
+    display:flex; align-items:center; justify-content:center; padding:24px;
+    opacity:0; pointer-events:none; transition:opacity .3s ease;
+  }
+  .modal-backdrop.open{opacity:1; pointer-events:auto;}
+  .modal-panel{
+    background:var(--panel); border:1px solid var(--border-strong); border-radius:16px;
+    max-width:640px; width:100%; max-height:85vh; overflow-y:auto;
+    padding:36px; box-shadow:var(--shadow-strong);
+    transform:translateY(24px) scale(.98); transition:transform .35s var(--ease);
+  }
+  .modal-backdrop.open .modal-panel{transform:translateY(0) scale(1);}
+  .modal-head{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:20px;}
+  .modal-head h3{font-size:24px; margin:0 0 8px; font-weight:600;}
+  .modal-close{
+    background:var(--panel-2); border:1px solid var(--border); color:var(--muted);
+    width:34px; height:34px; border-radius:8px; cursor:pointer; font-size:16px; flex-shrink:0;
+    transition:color .2s ease, border-color .2s ease;
+  }
+  .modal-close:hover{color:var(--text); border-color:var(--accent);}
+  .modal-panel h4{font-size:12.5px; color:var(--accent); margin:24px 0 10px; letter-spacing:.02em;}
+  .modal-panel p{color:var(--muted); font-size:14.5px; line-height:1.7; margin:0;}
+  .modal-metrics{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+  @media (max-width:520px){.modal-metrics{grid-template-columns:repeat(2,1fr);}}
+  .modal-chart{display:flex; align-items:flex-end; gap:6px; height:70px; margin-top:8px;}
+  .modal-chart i{flex:1; background:linear-gradient(180deg,var(--accent-light),var(--accent)); border-radius:3px 3px 0 0;}
+
+  /* ---------- workflow / process ---------- */
+  .workflow{display:grid; grid-template-columns:repeat(5,1fr); gap:0; position:relative;}
+  @media (max-width:900px){.workflow{grid-template-columns:1fr; gap:20px;}}
+  .wf-step{
+    text-align:center; padding:0 16px; position:relative;
+  }
+  .wf-step .wf-num{
+    width:52px; height:52px; border-radius:50%; margin:0 auto 18px;
+    background:var(--panel); border:1px solid var(--border-strong);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk',sans-serif; font-weight:700; color:var(--accent-light);
+    position:relative; z-index:1; transition:transform .3s var(--ease), background .3s ease;
+  }
+  .wf-step:hover .wf-num{transform:scale(1.08); background:var(--panel-2);}
+  .workflow::before{
+    content:""; position:absolute; top:26px; left:10%; right:10%; height:1px;
+    background:var(--border); z-index:0;
+  }
+  @media (max-width:900px){.workflow::before{display:none;}}
+  .wf-step h4{font-size:15.5px; margin:0 0 8px; font-weight:600;}
+  .wf-step p{color:var(--muted); font-size:13px; line-height:1.6; margin:0;}
+
+  /* ---------- timeline ---------- */
+  .timeline{position:relative; padding-left:32px;}
+  .timeline::before{content:""; position:absolute; left:5px; top:6px; bottom:6px; width:1px; background:var(--border);}
+  .t-item{position:relative; padding-bottom:38px;}
+  .t-item:last-child{padding-bottom:0;}
+  .t-item::before{
+    content:""; position:absolute; left:-32px; top:4px; width:11px; height:11px; border-radius:50%;
+    background:var(--accent); box-shadow:0 0 0 4px rgba(98,230,179,0.12);
+  }
+  .t-item.upcoming::before{background:var(--meta); box-shadow:0 0 0 4px rgba(127,160,149,0.12);}
+  .t-item .t-date{font-size:12px; color:var(--accent); margin-bottom:6px;}
+  .t-item.upcoming .t-date{color:var(--meta);}
+  .t-item h4{font-size:17px; margin:0 0 6px; font-weight:600;}
+  .t-item p{color:var(--muted); font-size:14px; line-height:1.6; margin:0;}
+
+  /* ---------- highlights ---------- */
+  .highlights-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
+  @media (max-width:860px){.highlights-grid{grid-template-columns:1fr;}}
+  .highlight-card{
+    background:var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding:26px; transition:transform .3s var(--ease), border-color .3s ease;
+  }
+  .highlight-card:hover{transform:translateY(-4px); border-color:var(--border-strong);}
+  .highlight-card .quote-mark{color:var(--accent); font-size:28px; font-family:Georgia,serif; line-height:1; margin-bottom:10px; display:block;}
+  .highlight-card p.quote{color:var(--text); font-size:14.5px; line-height:1.65; margin:0 0 18px;}
+  .highlight-person{display:flex; align-items:center; gap:12px;}
+  .avatar{
+    width:38px; height:38px; border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),var(--panel-2));
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk',sans-serif; font-weight:700; color:#04140f; font-size:14px;
+  }
+  .highlight-person div b{display:block; font-size:13.5px;}
+  .highlight-person div span{font-size:12px; color:var(--meta);}
+  .sample-tag{font-size:10.5px; color:var(--meta); border:1px solid var(--border); padding:2px 8px; border-radius:12px; margin-top:14px; display:inline-block;}
+
+  /* ---------- documentation ---------- */
+  .doc-panel{
+    background:linear-gradient(135deg, var(--panel), var(--panel-2));
+    border:1px solid var(--border); border-radius:14px; padding:38px;
+    display:flex; justify-content:space-between; align-items:center; gap:32px; flex-wrap:wrap;
+    box-shadow:var(--shadow-soft);
+  }
+  .doc-panel h3{margin:0 0 8px; font-size:19px; font-weight:600;}
+  .doc-panel p{margin:0; color:var(--muted); font-size:14.5px; max-width:460px; line-height:1.6;}
+
+  /* ---------- contact ---------- */
+  .contact-panel{
+    background:var(--panel); border:1px solid var(--border); border-radius:16px;
+    padding:44px; text-align:center;
+    box-shadow:var(--shadow-soft);
+  }
+  .contact-panel h2{margin:0 0 14px;}
+  .contact-panel p{color:var(--muted); max-width:480px; margin:0 auto 28px; line-height:1.7; font-size:15px;}
+  .contact-links{display:flex; gap:14px; justify-content:center; flex-wrap:wrap;}
+
+  /* ---------- footer ---------- */
+  footer.site{border-top:1px solid var(--border); padding:56px 0 0; background:var(--bg-soft); margin-top:0;}
+  .footer-grid{display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; gap:40px; padding:48px 0 40px;}
+  @media (max-width:900px){.footer-grid{grid-template-columns:1fr 1fr;}}
+  @media (max-width:600px){.footer-grid{grid-template-columns:1fr;}}
+  .footer-brand .brand{margin-bottom:14px;}
+  .footer-brand p{color:var(--muted); font-size:13.5px; line-height:1.7; max-width:320px;}
+  .footer-col h4{font-size:12.5px; color:var(--meta); margin:0 0 16px; font-weight:600;}
+  .footer-col a{display:block; color:var(--muted); text-decoration:none; font-size:14px; margin-bottom:11px; transition:color .2s ease;}
+  .footer-col a:hover{color:var(--accent-light);}
+  .footer-bottom{
+    border-top:1px solid var(--border); padding:22px 0; display:flex;
+    justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;
+    color:var(--copyright); font-size:12.5px;
+  }
+  .back-to-top{
+    background:var(--panel-2); border:1px solid var(--border); color:var(--muted);
+    width:36px; height:36px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center;
+    text-decoration:none; transition:color .2s ease, border-color .2s ease, transform .2s ease;
+  }
+  .back-to-top:hover{color:var(--accent-light); border-color:var(--accent); transform:translateY(-2px);}
+  @media (max-width:520px){.nav-row{padding:12px 16px;}}
+  @media (max-width:380px){.nav-row{padding:12px;}.brand{font-size:15px;}.theme-toggle{gap:0; padding:5px 8px;}.theme-toggle-label{display:none;}}
+</style>
+</head>
+<body class="homepage">
+<div class="atmosphere"></div>
+<div class="floaters" id="floaters"></div>
+
+<header class="site">
+  <div class="nav-row">
+    <a href="#top" class="brand">
+      <svg class="mark" viewBox="0 0 26 26" fill="none">
+        <circle cx="6" cy="6" r="2.4" fill="#62E6B3"/>
+        <circle cx="20" cy="6" r="2.4" fill="#62E6B3"/>
+        <circle cx="13" cy="20" r="2.4" fill="#A4F6D4"/>
+        <path d="M6 6L13 20M20 6L13 20M6 6L20 6" stroke="#62E6B3" stroke-width="1" opacity="0.6"/>
+      </svg>
+      AXON 3D Intelligence
+    </a>
+    <nav class="links" id="navLinks">
+      <a href="#top" data-nav>Home</a>
+      <a href="#about" data-nav>About</a>
+      <a href="#models" data-nav>Models</a>
+      <a href="#process" data-nav>Process</a>
+      <a href="#journey" data-nav>Journey</a>
+      <a href="#contact" data-nav>Contact</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn-secondary" href="#models" style="padding:9px 16px; font-size:13px; display:none;" id="navCta">Explore</a>
+      <button class="burger" id="burger" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ===== HERO ===== -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy reveal">
+        <div class="kicker"><span class="dot"></span> Interactive AI concept models</div>
+        <h1><span>AI, explained by</span><span>walking through it.</span></h1>
+        <p class="lede">AXON 3D Intelligence rebuilds abstract AI concepts as interactive 3D models — structures you can rotate, step through and run yourself, entirely in the browser.</p>
+        <div class="hero-cta">
+          <a class="btn-primary" href="#models">Explore models →</a>
+          <a class="btn-secondary" href="#about">Our aim</a>
+        </div>
+        <div class="hero-stats">
+          <div><span class="stat-number" data-target="7">0</span><span class="label">Models in the series</span></div>
+          <div><span class="stat-number" data-target="100" data-suffix="%">0</span><span class="label">Runs in-browser</span></div>
+          <div><span class="stat-number" data-target="3" data-suffix="D">0</span><span class="label">Real-time rendering</span></div>
+        </div>
+      </div>
+      <div class="hero-visual reveal">
+        <svg viewBox="0 0 400 340" xmlns="http://www.w3.org/2000/svg">
+          <g class="edge">
+            <line x1="60" y1="70" x2="200" y2="120"/><line x1="60" y1="170" x2="200" y2="120"/><line x1="60" y1="270" x2="200" y2="120"/>
+            <line x1="60" y1="70" x2="200" y2="220"/><line x1="60" y1="170" x2="200" y2="220"/><line x1="60" y1="270" x2="200" y2="220"/>
+            <line x1="200" y1="120" x2="330" y2="90"/><line x1="200" y1="120" x2="330" y2="170"/>
+            <line x1="200" y1="220" x2="330" y2="170"/><line x1="200" y1="220" x2="330" y2="250"/>
+          </g>
+          <circle class="node dim" cx="60" cy="70" r="4"/><circle class="node dim" cx="60" cy="170" r="4"/><circle class="node dim" cx="60" cy="270" r="4"/>
+          <circle class="node pulse" cx="200" cy="120" r="4" style="animation-delay:0s"/>
+          <circle class="node pulse" cx="200" cy="220" r="4" style="animation-delay:.8s"/>
+          <circle class="node pulse" cx="330" cy="90" r="4" style="animation-delay:1.2s"/>
+          <circle class="node pulse" cx="330" cy="170" r="4" style="animation-delay:1.6s"/>
+          <circle class="node pulse" cx="330" cy="250" r="4" style="animation-delay:2s"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ABOUT ===== -->
+  <section id="about" class="divider">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">About AXON</div>
+        <h2>Making the invisible parts of AI visible.</h2>
+        <p>Most AI concepts are taught through equations and static diagrams. AXON's goal is to turn each one into something you can look inside — a 3D structure you rotate, inspect and interact with, so the intuition sticks before the notation does.</p>
+      </div>
+      <div class="about-stats reveal-stagger">
+        <div><b>3D</b><span>Every concept is rebuilt as a spatial model, not a flat chart.</span></div>
+        <div><b>Unity + C#</b><span>Each visualization runs as a real-time WebGL application.</span></div>
+        <div><b>In-browser</b><span>No installs — every model runs directly on this site.</span></div>
+      </div>
+      <div class="skills-strip reveal">
+        <div class="skill-chip"><span class="sw"></span>Unity</div>
+        <div class="skill-chip"><span class="sw"></span>C#</div>
+        <div class="skill-chip"><span class="sw"></span>WebGL</div>
+        <div class="skill-chip"><span class="sw"></span>Python</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MODELS SHOWCASE ===== -->
+  <section id="models" class="divider">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">AI model showcase</div>
+        <h2>Interactive models</h2>
+        <p>Each card opens a self-contained 3D model. Hover a card for a quick look, or click to see the full breakdown.</p>
+      </div>
+
+      <div class="model-filters reveal">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="supervised">Supervised</button>
+        <button class="filter-btn" data-filter="unsupervised">Unsupervised</button>
+        <button class="filter-btn" data-filter="deep-learning">Deep Learning</button>
+        <button class="filter-btn" data-filter="ensemble">Ensemble</button>
+      </div>
+
+      <div class="models-grid reveal-stagger" id="modelsGrid"><!-- injected by JS --></div>
+    </div>
+  </section>
+
+  <!-- ===== PROCESS / WORKFLOW ===== -->
+  <section id="process" class="divider">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">How it's built</div>
+        <h2>From concept to interactive model</h2>
+        <p>Every model in the series follows the same pipeline, from research to a runnable 3D scene.</p>
+      </div>
+      <div class="workflow reveal-stagger">
+        <div class="wf-step"><div class="wf-num">1</div><h4>Research</h4><p>Break the concept down to its core mechanics and math.</p></div>
+        <div class="wf-step"><div class="wf-num">2</div><h4>Design</h4><p>Plan the 3D structure that best represents it spatially.</p></div>
+        <div class="wf-step"><div class="wf-num">3</div><h4>Train</h4><p>Build and train the underlying model on real data.</p></div>
+        <div class="wf-step"><div class="wf-num">4</div><h4>Visualize</h4><p>Bring it to life in Unity with C# and real-time rendering.</p></div>
+        <div class="wf-step"><div class="wf-num">5</div><h4>Deploy</h4><p>Ship it as a WebGL build, playable on this site.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== JOURNEY / TIMELINE ===== -->
+  <section id="journey" class="divider">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">Project journey</div>
+        <h2>Building the series, one model at a time</h2>
+        <p>A running log of progress across the project.</p>
+      </div>
+      <div class="timeline reveal-stagger">
+        <div class="t-item">
+          <div class="t-date">Phase 1 — Complete</div>
+          <h4>Research &amp; planning</h4>
+          <p>Scoped the model series, picked the first concepts, and defined the 3D visual language used across the site.</p>
+        </div>
+        <div class="t-item">
+          <div class="t-date">Phase 2 — Complete</div>
+          <h4>Neural Network shipped</h4>
+          <p>The handwritten-digit classifier went live — the first fully interactive, deployed model in the series.</p>
+        </div>
+        <div class="t-item upcoming">
+          <div class="t-date">Phase 3 — In progress</div>
+          <h4>Clustering model</h4>
+          <p>Building the K-Means visualization: a centered 3D axis system with live centroid movement.</p>
+        </div>
+        <div class="t-item upcoming">
+          <div class="t-date">Phase 4 — Planned</div>
+          <h4>Classical &amp; ensemble models</h4>
+          <p>Decision Tree, KNN and Random Forest join the series with the same interactive treatment.</p>
+        </div>
+        <div class="t-item upcoming">
+          <div class="t-date">Phase 5 — Planned</div>
+          <h4>Deep learning &amp; LLMs</h4>
+          <p>CNN and a transformer/LLM explainer round out the series with more advanced 3D scenes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== HIGHLIGHTS ===== -->
+  <section id="highlights" class="divider">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">Project highlights</div>
+        <h2>What early reviewers noticed</h2>
+        <p>Sample feedback from early demo sessions — illustrative, not linked to real names.</p>
+      </div>
+      <div class="highlights-grid reveal-stagger">
+        <div class="highlight-card">
+          <span class="quote-mark">“</span>
+          <p class="quote">Rotating the network mid-prediction made forward propagation click in a way slides never did.</p>
+          <div class="highlight-person">
+            <div class="avatar">FS</div>
+            <div><b>Faculty Supervisor</b><span>Demo session</span></div>
+          </div>
+          <span class="sample-tag">Sample feedback</span>
+        </div>
+        <div class="highlight-card">
+          <span class="quote-mark">“</span>
+          <p class="quote">Being able to draw a digit and watch it move through the layers is a much better first lesson than the math.</p>
+          <div class="highlight-person">
+            <div class="avatar">PR</div>
+            <div><b>Peer Reviewer</b><span>Class walkthrough</span></div>
+          </div>
+          <span class="sample-tag">Sample feedback</span>
+        </div>
+        <div class="highlight-card">
+          <span class="quote-mark">“</span>
+          <p class="quote">Running entirely in the browser, with no installs, made it easy to share and easy to try.</p>
+          <div class="highlight-person">
+            <div class="avatar">WA</div>
+            <div><b>Workshop Attendee</b><span>Open demo</span></div>
+          </div>
+          <span class="sample-tag">Sample feedback</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CONTACT ===== -->
+  <section id="contact" class="divider">
+    <div class="wrap">
+      <div class="contact-panel reveal">
+        <h2>Have a concept you'd like visualized?</h2>
+        <p>Reach out with questions, feedback, or ideas for the next model in the series.</p>
+        <div class="contact-links">
+          <a class="btn-primary" href="mailto:axon.3d.intelligence.1@gmail.com">Email us →</a>
+          <a class="btn-secondary" href="pages/contact.html" data-transition>Contact page</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#top" class="brand">
+          <svg class="mark" viewBox="0 0 26 26" fill="none">
+            <circle cx="6" cy="6" r="2.4" fill="#62E6B3"/><circle cx="20" cy="6" r="2.4" fill="#62E6B3"/>
+            <circle cx="13" cy="20" r="2.4" fill="#A4F6D4"/><path d="M6 6L13 20M20 6L13 20M6 6L20 6" stroke="#62E6B3" stroke-width="1" opacity="0.6"/>
+          </svg>
+          AXON 3D Intelligence
+        </a>
+        <p>An interactive gallery of AI concepts, rebuilt as 3D models you can explore in the browser.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Explore</h4>
+        <a href="#top">Home</a><a href="#about">About</a><a href="#models">Models</a>
+        <a href="#process">Process</a><a href="#journey">Journey</a>
+      </div>
+      <div class="footer-col">
+        <h4>Project</h4>
+        <a href="pages/about.html" data-transition>About the project</a>
+        <a href="pages/contact.html" data-transition>Contact page</a>
+        <a href="mailto:axon.3d.intelligence.1@gmail.com">axon.3d.intelligence.1@gmail.com</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="pages/privacy.html" data-transition>Privacy Policy</a>
+        <a href="pages/terms.html" data-transition>Terms of Use</a>
+        <a href="pages/disclaimer.html" data-transition>Disclaimer</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 AXON 3D Intelligence. All rights reserved.</span>
+      <span style="display:flex; align-items:center; gap:14px;">Built with Unity WebGL, TensorFlow &amp; C#.
+        <a class="back-to-top" href="#top" aria-label="Back to top">↑</a>
+      </span>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== MODAL ===== -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal-panel" id="modalPanel" role="dialog" aria-modal="true" aria-labelledby="modalTitle"></div>
+</div>
+
+<script src="assets/js/model-catalog.js?v=llm-live"></script>
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- smooth fade transition to internal pages ---------- */
+  function goTo(href){
+    if (reduce) { window.location.href = href; return; }
+    document.body.classList.add('leaving');
+    setTimeout(function(){ window.location.href = href; }, 220);
+  }
+  document.querySelectorAll('a[data-transition]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      var href = a.getAttribute('href');
+      if (!href || a.target === '_blank') return;
+      e.preventDefault();
+      goTo(href);
+    });
+  });
+
+  /* ---------- floating particles ---------- */
+  if(!reduce){
+    var fc = document.getElementById('floaters');
+    for(var i=0;i<14;i++){
+      var s = document.createElement('span');
+      s.style.left = (Math.random()*100)+'%';
+      s.style.bottom = '-10px';
+      s.style.animationDuration = (10+Math.random()*10)+'s';
+      s.style.animationDelay = (Math.random()*14)+'s';
+      fc.appendChild(s);
+    }
+  }
+
+  /* ---------- mobile nav ---------- */
+  var burger = document.getElementById('burger');
+  var navLinks = document.getElementById('navLinks');
+  burger.addEventListener('click', function(){
+    var open = navLinks.classList.toggle('open');
+    burger.setAttribute('aria-expanded', open);
+  });
+  navLinks.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){ navLinks.classList.remove('open'); });
+  });
+
+  /* ---------- active nav highlight ---------- */
+  var sections = ['top','about','models','process','journey','contact'].map(function(id){return document.getElementById(id);}).filter(Boolean);
+  var navA = document.querySelectorAll('nav.links a[data-nav]');
+  var navObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        var id = entry.target.id;
+        navA.forEach(function(a){
+          a.classList.toggle('active', a.getAttribute('href') === '#'+id);
+        });
+      }
+    });
+  }, {rootMargin:'-45% 0px -50% 0px'});
+  sections.forEach(function(s){navObserver.observe(s);});
+
+  /* ---------- reveal on scroll ---------- */
+  var revealEls = document.querySelectorAll('.reveal, .reveal-stagger');
+  var revealObserver = new IntersectionObserver(function(entries, obs){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        entry.target.classList.add('visible');
+        obs.unobserve(entry.target);
+      }
+    });
+  }, {threshold:.15});
+  revealEls.forEach(function(el){revealObserver.observe(el);});
+
+  /* ---------- animated counters ---------- */
+  var counters = document.querySelectorAll('.stat-number');
+  var counterObserver = new IntersectionObserver(function(entries, obs){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        var el = entry.target;
+        var target = parseFloat(el.dataset.target);
+        var suffix = el.dataset.suffix || '';
+        if(reduce){ el.textContent = target + suffix; obs.unobserve(el); return; }
+        var start = 0, duration = 1200, startTime = null;
+        function step(ts){
+          if(!startTime) startTime = ts;
+          var progress = Math.min((ts-startTime)/duration, 1);
+          var val = Math.floor(progress * target);
+          el.textContent = val + suffix;
+          if(progress < 1) requestAnimationFrame(step);
+          else el.textContent = target + suffix;
+        }
+        requestAnimationFrame(step);
+        obs.unobserve(el);
+      }
+    });
+  }, {threshold:.5});
+  counters.forEach(function(el){counterObserver.observe(el);});
+
+  /* ---------- model data ---------- */
+  var models = window.AXON_MODEL_CATALOG;
+
+  var grid = document.getElementById('modelsGrid');
+  function sparkBars(arr){
+    var max = Math.max.apply(null, arr);
+    return arr.map(function(v){ return '<i style="--h:'+(v/max).toFixed(2)+'"></i>'; }).join('');
+  }
+  function iconFor(type){
+    var icons = {
+      'deep-learning':'<circle cx="26" cy="26" r="4" fill="#62E6B3"/><circle cx="26" cy="26" r="16" stroke="#A4F6D4" stroke-width="1.4" fill="none" opacity="0.6"/><circle cx="26" cy="10" r="2.4" fill="#A4F6D4"/><circle cx="26" cy="42" r="2.4" fill="#A4F6D4"/><circle cx="10" cy="26" r="2.4" fill="#A4F6D4"/><circle cx="42" cy="26" r="2.4" fill="#A4F6D4"/>',
+      'unsupervised':'<circle cx="16" cy="18" r="3" fill="#62E6B3"/><circle cx="12" cy="26" r="3" fill="#62E6B3"/><circle cx="20" cy="30" r="3" fill="#62E6B3"/><circle cx="36" cy="16" r="3" fill="#A4F6D4"/><circle cx="40" cy="24" r="3" fill="#A4F6D4"/><circle cx="34" cy="34" r="3" fill="#A4F6D4"/><circle cx="16" cy="24" r="7" fill="none" stroke="#62E6B3" stroke-width="1.2"/><circle cx="37" cy="24" r="7" fill="none" stroke="#A4F6D4" stroke-width="1.2"/>',
+      'supervised':'<path d="M26 8v10M26 18l-12 10M26 18l12 10M14 28l-6 10M14 28l6 10M38 28l-6 10M38 28l6 10" stroke="#62E6B3" stroke-width="1.4" fill="none"/><circle cx="26" cy="8" r="2.6" fill="#A4F6D4"/><circle cx="14" cy="28" r="2.6" fill="#62E6B3"/><circle cx="38" cy="28" r="2.6" fill="#62E6B3"/><circle cx="8" cy="38" r="2.2" fill="#A4F6D4"/><circle cx="20" cy="38" r="2.2" fill="#A4F6D4"/><circle cx="32" cy="38" r="2.2" fill="#A4F6D4"/><circle cx="44" cy="38" r="2.2" fill="#A4F6D4"/>',
+      'ensemble':'<path d="M14 40V22M26 40V14M38 40V26" stroke="#62E6B3" stroke-width="2.4" stroke-linecap="round"/><circle cx="14" cy="18" r="3.4" fill="#A4F6D4"/><circle cx="26" cy="10" r="3.4" fill="#A4F6D4"/><circle cx="38" cy="22" r="3.4" fill="#A4F6D4"/>'
+    };
+    return icons[type] || icons['supervised'];
+  }
+
+  models.forEach(function(m){
+    var card = document.createElement('div');
+    card.className = 'mcard';
+    card.dataset.category = m.type;
+    card.tabIndex = 0;
+    card.innerHTML =
+      '<div class="mcard-top">'+
+        '<span class="type-tag">'+m.typeLabel+'</span>'+
+        '<span class="status-tag'+(m.status==='live'?' live':'')+'">'+m.statusLabel+'</span>'+
+        '<div class="mcard-icon"><svg viewBox="0 0 52 52">'+iconFor(m.type)+'</svg></div>'+
+        (m.sample ? '<div class="sparkline">'+sparkBars(m.sample)+'</div>' : '')+
+      '</div>'+
+      '<div class="mcard-body">'+
+        '<h3>'+m.name+'</h3>'+
+        '<p class="desc">'+m.desc+'</p>'+
+        (m.primary ? '<div class="progress-line"><i style="--pct:'+m.primary+'%"></i></div>' : '')+
+        '<div class="metric-row">'+
+          '<div class="metric-badge"><b>'+m.metrics[0].v+'</b><span>'+m.metrics[0].l+'</span></div>'+
+          '<div class="metric-badge"><b>'+m.metrics[1].v+'</b><span>'+m.metrics[1].l+'</span></div>'+
+        '</div>'+
+        (m.metrics.length > 2 ? '<div class="extra-metrics"><div class="metric-row">'+m.metrics.slice(2).map(function(mt){return '<div class="metric-badge"><b>'+mt.v+'</b><span>'+mt.l+'</span></div>';}).join('')+'</div></div>' : '')+
+        '<div class="tag-row">'+m.tags.map(function(t){return '<span>'+t+'</span>';}).join('')+'</div>'+
+        '<div class="view-hint">View details →</div>'+
+      '</div>';
+    card.addEventListener('click', function(){ m.link ? goTo(m.link) : openModal(m); });
+    card.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); m.link ? goTo(m.link) : openModal(m); } });
+    grid.appendChild(card);
+
+    var io = new IntersectionObserver(function(entries, obs){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){ card.classList.add('animated'); obs.unobserve(card); }
+      });
+    }, {threshold:.4});
+    io.observe(card);
+  });
+
+  /* ---------- filters ---------- */
+  document.querySelectorAll('.filter-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      var f = btn.dataset.filter;
+      grid.querySelectorAll('.mcard').forEach(function(c){
+        c.style.display = (f==='all' || c.dataset.category===f) ? '' : 'none';
+      });
+    });
+  });
+
+  /* ---------- modal ---------- */
+  var backdrop = document.getElementById('modalBackdrop');
+  var panel = document.getElementById('modalPanel');
+  function openModal(m){
+    panel.innerHTML =
+      '<div class="modal-head">'+
+        '<div><h3 id="modalTitle">'+m.name+'</h3><span class="type-tag" style="position:static; display:inline-block;">'+m.typeLabel+'</span></div>'+
+        '<button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>'+
+      '</div>'+
+      '<h4>Overview</h4><p>'+m.overview+'</p>'+
+      '<h4>Use case</h4><p>'+m.useCase+'</p>'+
+      '<h4>Dataset</h4><p>'+m.dataset+'</p>'+
+      '<h4>Metrics</h4>'+
+      '<div class="modal-metrics">'+m.metrics.map(function(mt){return '<div class="metric-badge"><b>'+mt.v+'</b><span>'+mt.l+'</span></div>';}).join('')+'</div>'+
+      '<h4>Technologies</h4><div class="tag-row">'+m.tags.map(function(t){return '<span>'+t+'</span>';}).join('')+'</div>'+
+      (m.sample ? '<h4>Sample result</h4><div class="modal-chart">'+m.sample.map(function(v){return '<i style="height:'+((v/Math.max.apply(null, m.sample))*100)+'%"></i>';}).join('')+'</div>' : '')+
+      (m.link ? '<div style="margin-top:26px;"><a class="btn-primary" href="'+m.link+'" data-modal-link>Open live model →</a></div>' : '<div style="margin-top:26px;"><span class="status-tag" style="position:static;">'+m.statusLabel+'</span></div>');
+    backdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+    document.getElementById('modalCloseBtn').focus();
+    var modalLink = panel.querySelector('[data-modal-link]');
+    if (modalLink) modalLink.addEventListener('click', function(e){ e.preventDefault(); goTo(modalLink.getAttribute('href')); });
+  }
+  function closeModal(){
+    backdrop.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  backdrop.addEventListener('click', function(e){ if(e.target === backdrop) closeModal(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeModal(); });
+
+})();
+</script>
+<script src="assets/js/site.js?v=20260930-theme" defer></script>
+</body>
+</html>
