@@ -21,8 +21,10 @@ class UnityRequestHandler(SimpleHTTPRequestHandler):
 
     def end_headers(self):
         request_path = self.path.split("?", 1)[0]
-        if request_path.endswith(".br"):
+        if request_path.endswith((".br", ".unityweb")):
             self.send_header("Content-Encoding", "br")
+        elif request_path.endswith(".gz"):
+            self.send_header("Content-Encoding", "gzip")
         super().end_headers()
 
 

@@ -35,3 +35,13 @@
    to test the full click-through: main page → NN model → back to main page.
 4. Deploy the whole folder as-is (Netlify, Vercel, GitHub Pages, etc.) —
    `index.html` at the root is the entry point.
+
+## Unity WebGL loading
+- Netlify reads `_headers` to serve Brotli-compressed Unity payloads with the
+  required `Content-Encoding` and WebAssembly MIME type. Keep this file in the
+  deployed site root.
+- The LLM page loads the `.br` build files directly. Keep those alongside its
+  loader; the uncompressed and `.gz` copies are not used by the page.
+- Other Unity builds must also be exported with Brotli compression for the
+  `.unityweb` response headers to match. Local `server.py` sends the same
+  compression headers for these files.

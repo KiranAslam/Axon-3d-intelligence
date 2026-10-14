@@ -1,0 +1,39 @@
+/nn-model/Build/*.data.unityweb
+  Content-Type: application/octet-stream
+  Content-Encoding: br
+/nn-model/Build/*.framework.js.unityweb
+  Content-Type: application/javascript
+  Content-Encoding: br
+/nn-model/Build/*.wasm.unityweb
+  Content-Type: application/wasm
+  Content-Encoding: br
+
+/kmc_model/Build/*.data.unityweb
+  Content-Type: application/octet-stream
+  Content-Encoding: br
+/kmc_model/Build/*.framework.js.unityweb
+  Content-Type: application/javascript
+  Content-Encoding: br
+/kmc_model/Build/*.wasm.unityweb
+  Content-Type: application/wasm
+  Content-Encoding: br
+
+/DT_model/Build/*.data.unityweb
+  Content-Type: application/octet-stream
+  Content-Encoding: br
+/DT_model/Build/*.framework.js.unityweb
+  Content-Type: application/javascript
+  Content-Encoding: br
+/DT_model/Build/*.wasm.unityweb
+  Content-Type: application/wasm
+  Content-Encoding: br
+
+/llm_model/Build/*.data.br
+  Content-Type: application/octet-stream
+  Content-Encoding: br
+/llm_model/Build/*.framework.js.br
+  Content-Type: application/javascript
+  Content-Encoding: br
+/llm_model/Build/*.wasm.br
+  Content-Type: application/wasm
+  Content-Encoding: br
